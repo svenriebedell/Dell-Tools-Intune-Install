@@ -28,12 +28,11 @@ limitations under the License.
 #>
 
 ######################################################################################################################
-# Program EXE with target Version
+# Program with target Version
 ######################################################################################################################
-$ProgramPath = "C:\Program Files\Dell\Command Monitor\dataeng\bin\dcecfg64.exe"
-$ProgramVersion_target = '10.8.0 (BLD_184)' 
-$ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ProgramPath).FileVersion
+$ProgramVersion_target = '3.11.0' 
+$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Power%Manager%'" | select -ExpandProperty Version
 
-if($ProgramVersion_current -eq $ProgramVersion_target){
+if($ProgramVersion_current -ge $ProgramVersion_target){
     Write-Host "Found it!"
 }
