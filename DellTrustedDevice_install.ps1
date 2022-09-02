@@ -29,49 +29,59 @@ limitations under the License.
 
 ###################################################################
 # Function for checking MSI File Version                          #
-# used from:                                                      #
-# https://gist.github.com/jstangroome/913062                      #
 ###################################################################
 
-function Get-MsiProductVersion {
+function Get-MSIInformation 
+{
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory=$true)]
-        [ValidateScript({$_ | Test-Path -PathType Leaf})]
-        [string]
-        $Path
-    )
+ param(
+        [System.IO.FileInfo]$MsiFile
+	)
+ 
+
+    $com_object = New-Object -com WindowsInstaller.Installer 
+            
+    $database = $com_object.GetType().InvokeMember("OpenDatabase","InvokeMethod",$Null,$com_object,@($MsiFile.FullName, 0)) 
+ 
+    $query = "SELECT * FROM Property" 
+    $View = $database.GetType().InvokeMember("OpenView","InvokeMethod",$Null,$database,($query)) 
+ 
+    $View.GetType().InvokeMember("Execute", "InvokeMethod", $Null, $View, $Null) 
+ 
+    $record = $View.GetType().InvokeMember("Fetch","InvokeMethod",$Null,$View,$Null) 
+
+ 
+ 
+    $msi_props = @{} 
+    while ($record -ne $null) { 
+        $prop_name = $record.GetType().InvokeMember("StringData", "GetProperty", $Null, $record, 1) 
+        $prop_value = $record.GetType().InvokeMember("StringData", "GetProperty", $Null, $record, 2) 
+        $msi_props[$prop_name] = $prop_value 
+        $record = $View.GetType().InvokeMember("Fetch","InvokeMethod",$Null,$View,$Null)
+    }
+
+    $MSIInformation = @{
+    "ProductName"=$msi_props.Item("ProductName");
+    "Manufacturer"=$msi_props.Item("Manufacturer");
+    "ProductVersion"=$msi_props.Item("ProductVersion");
+    "ProductCode"=$msi_props.Item("ProductCode");
+    "ProductLanguage"=$msi_props.Item("ProductLanguage")
+    "FileName"=$MSIFile.Name
+    }
+
+    $view.Close()
     
-    function Get-Property ($Object, $PropertyName, [object[]]$ArgumentList) {
-        return $Object.GetType().InvokeMember($PropertyName, 'Public, Instance, GetProperty', $null, $Object, $ArgumentList)
-    }
+    $database.Commit()
+    $database = $null
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($com_object) | Out-Null
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($view) | Out-Null
 
-    function Invoke-Method ($Object, $MethodName, $ArgumentList) {
-        return $Object.GetType().InvokeMember($MethodName, 'Public, Instance, InvokeMethod', $null, $Object, $ArgumentList)
-    }
+    rv com_object,database,view,record,MsiFile
+    [system.gc]::Collect()
+    [System.gc]::waitforpendingfinalizers()
 
-    $ErrorActionPreference = 'Stop'
-    Set-StrictMode -Version Latest
-
-    #http://msdn.microsoft.com/en-us/library/aa369432(v=vs.85).aspx
-    $msiOpenDatabaseModeReadOnly = 0
-    $Installer = New-Object -ComObject WindowsInstaller.Installer
-
-    $Database = Invoke-Method $Installer OpenDatabase  @($Path, $msiOpenDatabaseModeReadOnly)
-
-    $View = Invoke-Method $Database OpenView  @("SELECT Value FROM Property WHERE Property='ProductVersion'")
-
-    Invoke-Method $View Execute
-
-    $Record = Invoke-Method $View Fetch
-    if ($Record) {
-        Write-Output (Get-Property $Record StringData 1)
-    }
-
-    Invoke-Method $View Close @()
-    Remove-Variable -Name Record, View, Database, Installer
-
+    
+    return $MSIInformation
 }
 
 ##### Variables
