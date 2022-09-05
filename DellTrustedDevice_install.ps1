@@ -60,18 +60,14 @@ function Get-MSIInformation
         $record = $View.GetType().InvokeMember("Fetch","InvokeMethod",$Null,$View,$Null)
     }
 
-        $MSIInformation = @{
-                        "ProductName"=$msi_props.Item("ProductName");
-                        "Manufacturer"=$msi_props.Item("Manufacturer");
-                        "ProductVersion"=$msi_props.Item("ProductVersion");
-                        "ProductCode"=$msi_props.Item("ProductCode");
-                        "ProductLanguage"=$msi_props.Item("ProductLanguage")
-                        "FileName"=$MSIFile.Name
-                        }
-
-
-
-
+    $MSIInformation = @{
+    "ProductName"=$msi_props.Item("ProductName");
+    "Manufacturer"=$msi_props.Item("Manufacturer");
+    "ProductVersion"=$msi_props.Item("ProductVersion");
+    "ProductCode"=$msi_props.Item("ProductCode");
+    "ProductLanguage"=$msi_props.Item("ProductLanguage")
+    "FileName"=$MSIFile.Name
+    }
 
     $view.Close()
     
@@ -79,7 +75,7 @@ function Get-MSIInformation
     $database = $null
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($com_object) | Out-Null
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($view) | Out-Null
-    
+
     rv com_object,database,view,record,MsiFile
     [system.gc]::Collect()
     [System.gc]::waitforpendingfinalizers()
@@ -87,6 +83,7 @@ function Get-MSIInformation
     
     return $MSIInformation
 }
+
 
 ##### Variables
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
