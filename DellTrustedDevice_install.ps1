@@ -60,7 +60,12 @@ function Get-MSIInformation
         $record = $View.GetType().InvokeMember("Fetch","InvokeMethod",$Null,$View,$Null)
     }
 
-    $MSIInformation = @{
+    $MSIInformation = $msi_props.Item("ProductVersion")
+    
+
+    <#
+
+     $MSIInformation = @{
     "ProductName"=$msi_props.Item("ProductName");
     "Manufacturer"=$msi_props.Item("Manufacturer");
     "ProductVersion"=$msi_props.Item("ProductVersion");
@@ -69,13 +74,17 @@ function Get-MSIInformation
     "FileName"=$MSIFile.Name
     }
 
+    #>
+
+
+
     $view.Close()
     
     $database.Commit()
     $database = $null
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($com_object) | Out-Null
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($view) | Out-Null
-
+    $
     rv com_object,database,view,record,MsiFile
     [system.gc]::Collect()
     [System.gc]::waitforpendingfinalizers()
@@ -86,10 +95,11 @@ function Get-MSIInformation
 
 ##### Variables
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
-$ProgramPath = ".\" + $InstallerName
-#[Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.FileVersion
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Trusted Device%'" | select -ExpandProperty Version
-$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Trusted Device%'" | Select-Object -ExpandProperty IdentifyingNumber
+$ProgramPath = (Get-Item .\$InstallerName).DirectoryName+ "\" + $InstallerName
+$ProgramVersion_target = Get-MSIInformation -MsiFile $ProgramPath
+[Version]$ProgramVersion_target = $ProgramData_target | Where-Object{$_.Name -like 'Product*'}
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | select -ExpandProperty Version
+$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | Select-Object -ExpandProperty IdentifyingNumber
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
