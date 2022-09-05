@@ -66,7 +66,7 @@ If ($ProgramVersion_current -ne $null)
 ###################################################################
 
 Start-Process -FilePath ".\ddmsetup.exe" -ArgumentList '/verysilent /noupdate'
-Start-Sleep -Seconds 5
-
+Start-Sleep -Seconds 15
+Start-Process -FilePath "C:\Program Files (x86)\Dell\Dell Display Manager\ddm.exe"
 
 Exit 0
