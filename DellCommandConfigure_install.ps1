@@ -46,7 +46,7 @@ if ($ProgramVersion_target -gt $ProgramVersion_current)
 Else
     {
     Write-Host "Gleiche Version"
-    Exit Code 0
+    Exit 0
     }
 
 
