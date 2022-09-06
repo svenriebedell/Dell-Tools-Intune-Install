@@ -35,5 +35,6 @@ $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name 
 #uninstall Software                                               #
 ###################################################################
 
-msiexec.exe /x $ApplicationID_current /qn
+Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn REBOOT=R" -Wait
 
+Exit 2
