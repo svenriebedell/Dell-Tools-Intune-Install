@@ -27,68 +27,35 @@ limitations under the License.
    
 #>
 
-###################################################################
-# Function for checking MSI File Version                          #
-###################################################################
-
-function Get-MSIInformation 
-{
-
- param (
-    [IO.FileInfo] $MSI
-)
- 
-if (!(Test-Path $MSI.FullName)) {
-    throw "File '{0}' does not exist" -f $MSI.FullName
-}
- 
-try {
-    $windowsInstaller = New-Object -com WindowsInstaller.Installer
-    $database = $windowsInstaller.GetType().InvokeMember(
-        "OpenDatabase", "InvokeMethod", $Null,
-        $windowsInstaller, @($MSI.FullName, 0)
-    )
- 
-    $q = "SELECT Value FROM Property WHERE Property = 'ProductVersion'"
-    $View = $database.GetType().InvokeMember(
-        "OpenView", "InvokeMethod", $Null, $database, ($q)
-    )
- 
-    $View.GetType().InvokeMember("Execute", "InvokeMethod", $Null, $View, $Null)
-    $record = $View.GetType().InvokeMember( "Fetch", "InvokeMethod", $Null, $View, $Null )
-    $version = $record.GetType().InvokeMember( "StringData", "GetProperty", $Null, $record, 1 )
- 
-    return $version
-} catch {
-    throw "Failed to get MSI file version: {0}." -f $_
- 
-    return $MSIInformation
-}
-}
 
 ##### Variables
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
 $ProgramPath = (Get-Item .\$InstallerName).DirectoryName+ "\" + $InstallerName
-[string]$ProgramVersion_target = Get-MSIInformation -MSI $ProgramPath
-$ProgramVersion_target = $ProgramData_target | Where-Object{$_.Name -like 'Product*'}
-$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | select -ExpandProperty Version
+[Version]$ProgramVersion_target = "4.7.132.0"  # need to be the same like the msi file
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | select -ExpandProperty Version
 $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | Select-Object -ExpandProperty IdentifyingNumber
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
 ###################################################################
 
-if ($ProgramVersion_target -gt $ProgramVersion_current)
+If ($ProgramVersion_current -ne $null)
     {
-    #msiexec.exe /x $ApplicationID_current /qn
 
-    Write-Output "Test 1"
-    }
+    if ($ProgramVersion_target -gt $ProgramVersion_current)
+        {
+    
+        Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn REBOOT=R" -Wait
+    
+        Exit 2
 
-Else
-    {
-    Write-Host "Gleiche Version"
-    Exit 0
+        }
+
+    Else
+        {
+        Write-Host "Gleiche Version"
+        Exit 0
+        }
     }
 
 
@@ -96,43 +63,8 @@ Else
 #Install new Software                                             #
 ###################################################################
 
-msiexec.exe /x $InstallerName /qn
+$ArgumentString = '/i "'+$ProgramPath + '" /qn REBOOT=R'
 
+Start-Process -FilePath msiexec.exe -ArgumentList "$ArgumentString" -Wait
 
-
-$MSI = "C:\Users\SvenRiebe\OneDrive - riebelab\Modern Deployment\Dell\Trusted Device\4.7.132\TrustedDevice-64bit.msi"
-
-###############################################################
-# Name:         GetMsiVersion.ps1
-# Description:  Prints out MSI installer version
-# Usage:        GetMsiVersion.ps1 <path to MSI>
-# Credits:      http://stackoverflow.com/q/8743122/383673
-###############################################################
-param (
-    [IO.FileInfo] $MSI
-)
- 
-if (!(Test-Path $MSI.FullName)) {
-    throw "File '{0}' does not exist" -f $MSI.FullName
-}
- 
-try {
-    $windowsInstaller = New-Object -com WindowsInstaller.Installer
-    $database = $windowsInstaller.GetType().InvokeMember(
-        "OpenDatabase", "InvokeMethod", $Null,
-        $windowsInstaller, @($MSI.FullName, 0)
-    )
- 
-    $q = "SELECT Value FROM Property WHERE Property = 'ProductVersion'"
-    $View = $database.GetType().InvokeMember(
-        "OpenView", "InvokeMethod", $Null, $database, ($q)
-    )
- 
-    $View.GetType().InvokeMember("Execute", "InvokeMethod", $Null, $View, $Null)
-    $record = $View.GetType().InvokeMember( "Fetch", "InvokeMethod", $Null, $View, $Null )
-    $version = $record.GetType().InvokeMember( "StringData", "GetProperty", $Null, $record, 1 )
- 
-    return $version
-} catch {
-    throw "Failed to get MSI file version: {0}." -f $_
-}
+Exit 2
