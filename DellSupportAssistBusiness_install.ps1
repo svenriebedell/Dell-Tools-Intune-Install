@@ -29,32 +29,37 @@ limitations under the License.
 
 ##### Variables
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
-$ProgramPath = ".\" + $InstallerName
-[Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
+$ProgramPath = $InstallerName
+[Version]$ProgramVersion_target = "3.2.0.87"
 [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | select -ExpandProperty Version
-$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty IdentifyingNumber
-$Argumentstring = '/i ' + '"' + $ProgramPath + '" TRANSFORMS=".\SupportAssistConfig.mst" DEPLOYMENTKEY="Dell2022#" /qn'
+#$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty IdentifyingNumber
+$Argumentstring = '/i ' + '"' + $ProgramPath + '" TRANSFORMS="SupportAssistConfig.mst" DEPLOYMENTKEY="Dell2022#" /qn'
 
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
 ###################################################################
 
-if ($ProgramVersion_target -gt $ProgramVersion_current)
-    {
-    Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn" -Wait
-    }
 
-Else
+If ($ProgramVersion_current -ne $null)
     {
-    Write-Host "Gleiche Version"
-    Exit Code 0
-    }
 
+    if ($ProgramVersion_target -gt $ProgramVersion_current)
+        {
+        Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn" -Wait
+       
+        }
+
+    Else
+        {
+        Write-Host "Gleiche Version"
+        Exit 0
+        }
+
+    }
 
 ###################################################################
 #Install new Software                                             #
 ###################################################################
 
-
-Start-Process -FilePath msiexec.exe -ArgumentList "$Argumentstring" -Wait
+Start-Process -FilePath msiexec.exe -ArgumentList $Argumentstring -Wait
