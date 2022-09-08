@@ -33,6 +33,7 @@ limitations under the License.
 $ProgramVersion_target = '4.7.0.433' 
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Configure%'" | select -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target){
-    Write-Host "Found it!"
-}
+if($ProgramVersion_current -eq $ProgramVersion_target)
+    {
+        Write-Host "Found it!"
+    }
