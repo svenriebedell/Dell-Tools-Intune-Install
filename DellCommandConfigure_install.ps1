@@ -38,15 +38,19 @@ $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name 
 #Checking if older Version is installed and uninstall this Version#
 ###################################################################
 
-if ($ProgramVersion_target -gt $ProgramVersion_current)
+If ($ProgramVersion_current -ne $null)
     {
-    msiexec.exe /x $ApplicationID_current /qn
-    }
 
-Else
-    {
-    Write-Host "Gleiche Version"
-    Exit 0
+    if ($ProgramVersion_target -gt $ProgramVersion_current)
+        {
+        msiexec.exe /x $ApplicationID_current /qn
+        }
+
+    Else
+        {
+        Write-Host "Gleiche Version"
+        Exit 0
+        }
     }
 
 
