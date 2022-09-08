@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.1
 _Dev_Status_ = Test
 Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -28,9 +28,10 @@ limitations under the License.
 #>
 
 ######################################################################################################################
-# PreCheck if SupportAssistUninstall_Cleanup.ps1 is finished                                             #
+# PreCheck if SupportAssistUninstall_Cleanup.ps1 is finished                                                         #
 ######################################################################################################################
-$Program_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {($_.DisplayName -like "*Dell SupportAssist*" -and $_.DisplayName -notlike "*OS Recovery*" -and $_.DisplayName -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty DisplayName
+$Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
+
 
 if($Program_current -ne $null)
 {
@@ -41,7 +42,9 @@ if($Program_current -ne $null)
 ######################################################################################################################
 # Checking if a SupportAssist existing after Cleanup script                                                          #
 ######################################################################################################################
-$Program_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {($_.DisplayName -like "*Dell SupportAssist*" -and $_.DisplayName -notlike "*OS Recovery*" -and $_.DisplayName -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty DisplayName
+$Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
+
+
 
 if($Program_current -eq $null)
 {
