@@ -28,9 +28,20 @@ limitations under the License.
 #>
 
 ######################################################################################################################
-# Checking if a SupportAssist existing after Cleanup script
+# PreCheck if SupportAssistUninstall_Cleanup.ps1 is finished                                             #
 ######################################################################################################################
-$Program_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {($_.DisplayName -like "*Dell SupportAssist*" -and $_.DisplayName -notlike "*OS Recovery*")} | Select-Object -ExpandProperty DisplayName
+$Program_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {($_.DisplayName -like "*Dell SupportAssist*" -and $_.DisplayName -notlike "*OS Recovery*" -and $_.DisplayName -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty DisplayName
+
+if($Program_current -ne $null)
+{
+    Start-Sleep -Seconds 300
+}
+
+
+######################################################################################################################
+# Checking if a SupportAssist existing after Cleanup script                                                          #
+######################################################################################################################
+$Program_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {($_.DisplayName -like "*Dell SupportAssist*" -and $_.DisplayName -notlike "*OS Recovery*" -and $_.DisplayName -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty DisplayName
 
 if($Program_current -eq $null)
 {
