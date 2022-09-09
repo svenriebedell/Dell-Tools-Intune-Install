@@ -27,26 +27,49 @@ limitations under the License.
    
 #>
 
+##### Varibles
+[Version]$ProgramVersion_Target = "3.2.0.87"
+[Version]$ProgramVersion_Current = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "*Dell SupportAssist for Business PCs*"} | Select-Object -ExpandProperty Version
+$Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
+
+
 ######################################################################################################################
 # PreCheck if SupportAssistUninstall_Cleanup.ps1 is finished                                                         #
 ######################################################################################################################
-$Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
 
+If ($ProgramVersion_Current -eq $ProgramVersion_Target)
 
-if($Program_current -ne $null)
-{
-    Start-Sleep -Seconds 300
-}
+    {
 
-
-######################################################################################################################
-# Checking if a SupportAssist existing after Cleanup script                                                          #
-######################################################################################################################
-$Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
-
-
-
-if($Program_current -eq $null)
-{
     Write-Host "Found it!"
-}
+
+    }
+
+Else
+
+    {
+
+    if($Program_current -ne $null)
+        {  
+    
+        Start-Sleep -Seconds 300
+        
+        }
+    Else
+        {
+
+        ######################################################################################################################
+        # Checking if a SupportAssist existing after Cleanup script                                                          #
+        ######################################################################################################################
+        $Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
+        
+
+        if($Program_current -eq $null)
+            {
+                Write-Host "Found it!"
+            }
+        }
+        
+    }
+
+
