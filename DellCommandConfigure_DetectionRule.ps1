@@ -30,7 +30,7 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '4.7.0.433' 
+$ProgramVersion_target = '4.7.0.433' # need to be the same like the exe file
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Configure%'" | select -ExpandProperty Version
 
 if($ProgramVersion_current -eq $ProgramVersion_target)

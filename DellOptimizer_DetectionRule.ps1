@@ -30,9 +30,10 @@ limitations under the License.
 ######################################################################################################################
 # Program EXE with target Version
 ######################################################################################################################
-$ProgramVersion_target = '3.1.175.0' 
+$ProgramVersion_target = '3.1.175.0' # need to be the same like the exe file
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Optimizer%'" | select -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target){
+if($ProgramVersion_current -ge $ProgramVersion_target)
+    {
     Write-Host "Found it!"
-}
+    }
