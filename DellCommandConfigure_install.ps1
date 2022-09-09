@@ -48,7 +48,7 @@ If ($ProgramVersion_current -ne $null)
 
     Else
         {
-        Write-Host "Gleiche Version"
+        Write-Host "same version is installed"
         Exit 0
         }
     }
