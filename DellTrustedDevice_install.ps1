@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.1
 _Dev_Status_ = Test
 Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -34,6 +34,7 @@ $ProgramPath = (Get-Item .\$InstallerName).DirectoryName+ "\" + $InstallerName
 [Version]$ProgramVersion_target = "4.8.135.0"  # need to be the same like the msi file
 [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | select -ExpandProperty Version
 $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | Select-Object -ExpandProperty IdentifyingNumber
+$ArgumentString = '/i "'+$ProgramPath + '" /qn REBOOT=R'
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
@@ -44,10 +45,13 @@ If ($ProgramVersion_current -ne $null)
 
     if ($ProgramVersion_target -gt $ProgramVersion_current)
         {
+        
+        ###################################################################
+        #Update Software                                                  #
+        ###################################################################
+        
+        Start-Process -FilePath msiexec.exe -ArgumentList "$ArgumentString" -Wait
     
-        Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn REBOOT=R" -Wait
-    
-        Exit 2
 
         }
 
@@ -58,13 +62,14 @@ If ($ProgramVersion_current -ne $null)
         }
     }
 
+Else
+    {
+    
+    ###################################################################
+    #Install new Software                                             #
+    ###################################################################
 
-###################################################################
-#Install new Software                                             #
-###################################################################
-
-$ArgumentString = '/i "'+$ProgramPath + '" /qn REBOOT=R'
-
-Start-Process -FilePath msiexec.exe -ArgumentList "$ArgumentString" -Wait
-
-Exit 2
+    
+    Start-Process -FilePath msiexec.exe -ArgumentList "$ArgumentString" -Wait
+    
+    }
