@@ -31,7 +31,7 @@ limitations under the License.
 ##### Variables
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
 $ProgramPath = (Get-Item .\$InstallerName).DirectoryName+ "\" + $InstallerName
-[Version]$ProgramVersion_target = "4.7.132.0"  # need to be the same like the msi file
+[Version]$ProgramVersion_target = "4.8.135.0"  # need to be the same like the msi file
 [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | select -ExpandProperty Version
 $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | Select-Object -ExpandProperty IdentifyingNumber
 
@@ -53,7 +53,7 @@ If ($ProgramVersion_current -ne $null)
 
     Else
         {
-        Write-Host "Gleiche Version"
+        Write-Host "same version is installed"
         Exit 0
         }
     }
