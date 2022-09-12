@@ -30,9 +30,10 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '4.7.132' 
+$ProgramVersion_target = '4.8.135' 
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted Device%'" | select -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target){
-    Write-Host "Found it!"
-}
+if($ProgramVersion_current -ge $ProgramVersion_target)
+    {
+        Write-Host "Found it!"
+    }
