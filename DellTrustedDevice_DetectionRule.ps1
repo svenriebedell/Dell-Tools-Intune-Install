@@ -33,7 +33,7 @@ limitations under the License.
 $ProgramVersion_target = '4.8.135' 
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted Device%'" | select -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target)
+if($ProgramVersion_current -eq $ProgramVersion_target)
     {
         Write-Host "Found it!"
     }
