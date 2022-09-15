@@ -32,7 +32,6 @@ $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
 [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Optimizer%'" | select -ExpandProperty Version
-$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -match "Dell Optimizer Service" } | Select-Object -ExpandProperty UninstallString
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
@@ -43,21 +42,29 @@ If ($ProgramVersion_current -ne $null)
 
     if ($ProgramVersion_target -gt $ProgramVersion_current)
         {
+        ###################################################################
+        #Update Software to take existing App configuration               #
+        ###################################################################
 
-        Start-Process cmd.exe -ArgumentList '/c',"$ApplicationID_current -silent"
-        Start-Sleep -Seconds 90
+        Start-Process -FilePath "$ProgramPath" -ArgumentList "/s" -Wait
+        
 
         }
 
     Else
         {
         Write-Host "same version is installed"
-        Exit Code 0
+        Exit 0
         }
     }
 
-###################################################################
-#Install new Software                                             #
-###################################################################
+Else
+    {
 
-Start-Process -FilePath "$ProgramPath" -ArgumentList "/s" -Wait
+    ###################################################################
+    #Install new Software                                             #
+    ###################################################################
+
+    Start-Process -FilePath "$ProgramPath" -ArgumentList "/s" -Wait
+
+    }
