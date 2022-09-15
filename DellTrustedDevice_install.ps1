@@ -47,7 +47,7 @@ If ($ProgramVersion_current -ne $null)
         {
         
         ###################################################################
-        #Update Software                                                  #
+        #Update Software by msi upgrade                                   #
         ###################################################################
         
         Start-Process -FilePath msiexec.exe -ArgumentList "$ArgumentString" -Wait
@@ -71,5 +71,6 @@ Else
 
     
     Start-Process -FilePath msiexec.exe -ArgumentList "$ArgumentString" -Wait
+
     
     }
