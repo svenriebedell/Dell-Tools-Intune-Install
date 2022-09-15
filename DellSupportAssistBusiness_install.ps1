@@ -20,7 +20,7 @@ limitations under the License.
 
 <#
 .Synopsis
-   This PowerShell is for installation in Microsoft MEM for Dell SupportAssist Business
+   This PowerShell is for installation on Microsoft MEM for Dell SupportAssist Business
 
 .DESCRIPTION
    This PowerShell will install/Update a Device for Dell SupportAssist Business. It will be used as install file in Microsoft MEM win32 install.
@@ -32,8 +32,8 @@ $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
 $ProgramPath = $InstallerName
 [Version]$ProgramVersion_target = "3.2.0.87"  #need to change to Version of MSI File
 [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty Version
-#$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty IdentifyingNumber
-$Argumentstring = '/i ' + '"' + $ProgramPath + '" TRANSFORMS="SupportAssistConfig.mst" DEPLOYMENTKEY="Dell2022#" /qn'
+$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty IdentifyingNumber
+$Argumentstring = '/i ' + '"' + $ProgramPath + '" TRANSFORMS="SupportAssistConfig.mst" DEPLOYMENTKEY="Your Deployment Key you generated before with the installer" /qn'
 
 
 ###################################################################
@@ -46,13 +46,14 @@ If ($ProgramVersion_current -ne $null)
 
     if ($ProgramVersion_target -gt $ProgramVersion_current)
         {
+        
         Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn" -Wait
        
         }
 
     Else
         {
-        Write-Host "Gleiche Version"
+        Write-Host "same version is installed"
         Exit 0
         }
 
