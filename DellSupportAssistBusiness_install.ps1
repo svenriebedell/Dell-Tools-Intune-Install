@@ -31,7 +31,7 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
 $ProgramPath = $InstallerName
 [Version]$ProgramVersion_target = "3.2.0.87"  #need to change to Version of MSI File
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | select -ExpandProperty Version
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty Version
 #$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Support%Business%'" | Select-Object -ExpandProperty IdentifyingNumber
 $Argumentstring = '/i ' + '"' + $ProgramPath + '" TRANSFORMS="SupportAssistConfig.mst" DEPLOYMENTKEY="Dell2022#" /qn'
 
