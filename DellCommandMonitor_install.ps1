@@ -31,7 +31,7 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Monitor%'" | select -ExpandProperty Version
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Monitor%'" | Select-Object -ExpandProperty Version
 $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Monitor%'" | Select-Object -ExpandProperty IdentifyingNumber
 
 ###################################################################
