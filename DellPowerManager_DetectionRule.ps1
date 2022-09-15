@@ -33,7 +33,7 @@ limitations under the License.
 $ProgramVersion_target = '3.11.0' # need to be the same like the exe file 
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Power%Manager%'" | select -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target)
+if($ProgramVersion_current -eq $ProgramVersion_target)
     {
         Write-Host "Found it!"
     }
