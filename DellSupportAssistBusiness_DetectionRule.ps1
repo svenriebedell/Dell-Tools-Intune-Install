@@ -31,9 +31,9 @@ limitations under the License.
 # Program with target Version
 ######################################################################################################################
 $ProgramVersion_target = '3.2.0.87' # need to be the same like the msi file
-$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%SupportAssist%Business%'" | select -ExpandProperty Version
+$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%SupportAssist%Business%'" | Select-Object -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target)
+if($ProgramVersion_current -eq $ProgramVersion_target)
     {
         Write-Host "Found it!"
     }
