@@ -42,12 +42,13 @@ If ($ProgramVersion_current -ne $null)
 
     if ($ProgramVersion_target -gt $ProgramVersion_current)
         {
-        msiexec.exe /x $ApplicationID_current /qn
+        Start-Process -FilePath msiexec.exe -ArgumentList '/x $ApplicationID_current /qn' -Wait
         }
 
     Else
         {
-        Write-Host "Gleiche Version"
+        Write-Host "Same version is installed"
+        
         Exit Code 0
         }
 
