@@ -31,8 +31,8 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Optimizer%'" | select -ExpandProperty Version
-$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Optimizer%'" | Select-Object -ExpandProperty IdentifyingNumber
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Optimizer%'" | select -ExpandProperty Version
+$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -match "Dell Optimizer Service" } | Select-Object -ExpandProperty UninstallString
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
@@ -43,7 +43,10 @@ If ($ProgramVersion_current -ne $null)
 
     if ($ProgramVersion_target -gt $ProgramVersion_current)
         {
-        msiexec.exe /x $ApplicationID_current /qn
+
+        Start-Process cmd.exe -ArgumentList '/c',"$ApplicationID_current -silent"
+        Start-Sleep -Seconds 90
+
         }
 
     Else
