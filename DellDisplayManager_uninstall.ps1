@@ -35,7 +35,7 @@ $ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsof
 #uninstall Software                                               #
 ###################################################################
 
-$IDProcess = Get-Process | Where-Object {$_.ProcessName -like 'ddm'} | select -ExpandProperty ID
+$IDProcess = Get-Process | Where-Object {$_.ProcessName -like 'ddm'} | Select-Object -ExpandProperty ID
 Stop-Process -Id $IDProcess -Force
 
 Start-Process cmd.exe -ArgumentList '/c',$ApplicationID_current -Wait
