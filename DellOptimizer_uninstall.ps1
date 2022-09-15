@@ -36,4 +36,5 @@ $ApplicationUninstallString = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Mic
 ###################################################################
 
 
-Start-Process cmd.exe -ArgumentList '/c',"$ApplicationUninstallString -silent" -Wait
+Start-Process cmd.exe -ArgumentList '/c',"$ApplicationUninstallString -silent"
+Start-Sleep -Seconds 90
