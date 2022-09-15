@@ -36,5 +36,3 @@ $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name 
 ###################################################################
 
 Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn REBOOT=R" -Wait
-
-Exit 2
