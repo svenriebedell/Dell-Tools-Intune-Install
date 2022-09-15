@@ -31,9 +31,9 @@ limitations under the License.
 # Program with target Version
 ######################################################################################################################
 $ProgramVersion_target = '10.8.0.284' # need to be the same like the exe file
-$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Monitor%'" | select -ExpandProperty Version
+$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Monitor%'" | Select-Object -ExpandProperty Version
 
-if($ProgramVersion_current -ge $ProgramVersion_target)
+if($ProgramVersion_current -eq $ProgramVersion_target)
     {
     Write-Host "Found it!"
     }
