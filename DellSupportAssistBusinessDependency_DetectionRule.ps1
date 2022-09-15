@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1
+_version_ = 1.0
 _Dev_Status_ = Test
 Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -20,54 +20,22 @@ limitations under the License.
 
 <#
 .Synopsis
-   This PowerShell is for custom detection in Microsoft MEM for Dell Power Manager
+   This PowerShell is for custom detection for Microsoft MEM Dependency App for SupportAssist Cleanup
 
 .DESCRIPTION
-   This PowerShell will checki if Dell Power Manager is ready installed on a device. It will be used as custom detection in Microsoft MEM win32 install.
+   This PowerShell will check if Dell SupportAssist is ready uninstalled on a device. It will be used as custom detection in Microsoft MEM win32 install.
    
 #>
 
 ##### Varibles
-[Version]$ProgramVersion_Target = "3.2.0.87"
-[Version]$ProgramVersion_Current = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "*Dell SupportAssist for Business PCs*"} | Select-Object -ExpandProperty Version
 $Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
 
-
 ######################################################################################################################
-# PreCheck if SupportAssistUninstall_Cleanup.ps1 is finished                                                         #
+# Checking if a SupportAssist existing after Cleanup script                                                          #
 ######################################################################################################################
 
-If ($ProgramVersion_Current -eq $ProgramVersion_Target)
 
+if ($null -eq $Program_current) 
     {
-
-    Write-Host "Found it!"
-
-    }
-
-Else
-
-    {
-
-    if($Program_current -ne $null)
-        {  
-    
-        Start-Sleep -Seconds 300
-        
-        }
-    Else
-        {
-
-        ######################################################################################################################
-        # Checking if a SupportAssist existing after Cleanup script                                                          #
-        ######################################################################################################################
-        $Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
-        
-
-        if($Program_current -eq $null)
-            {
-                Write-Host "Found it!"
-            }
-        }
-        
+        Write-Host "Found it!"
     }
