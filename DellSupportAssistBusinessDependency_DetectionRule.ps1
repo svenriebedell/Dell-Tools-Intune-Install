@@ -28,6 +28,8 @@ limitations under the License.
 #>
 
 ##### Varibles
+$ProgramVersion_target = '3.2.0.87' # need to be the same like the msi file
+$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%SupportAssist%Business%'" | Select-Object -ExpandProperty Version
 $Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.Name -like "*Dell SupportAssist*" -and $_.Name -notlike "*OS Recovery*" -and $_.Name -notlike "Dell*SupportAssist*Remediation")} | Select-Object -ExpandProperty Name
 
 ######################################################################################################################
@@ -37,5 +39,22 @@ $Program_current = Get-CimInstance -ClassName Win32_Product | Where-Object {($_.
 
 if ($null -eq $Program_current) 
     {
+    
+    Write-Host "Found it!"
+    
+    }
+Else
+    {
+
+    ######################################################################################################################
+    # Cover newest version is installed on the machine                                                                   #
+    ######################################################################################################################
+
+    if ($ProgramVersion_target -eq $ProgramVersion_current)
+        {
+        
         Write-Host "Found it!"
+
+        }
+
     }
