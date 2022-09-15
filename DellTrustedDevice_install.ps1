@@ -32,7 +32,7 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
 $ProgramPath = (Get-Item .\$InstallerName).DirectoryName+ "\" + $InstallerName
 [Version]$ProgramVersion_target = "4.8.135.0"  # need to be the same like the msi file
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | select -ExpandProperty Version
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | Select-Object -ExpandProperty Version
 $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Trusted%Device%'" | Select-Object -ExpandProperty IdentifyingNumber
 $ArgumentString = '/i "'+$ProgramPath + '" /qn REBOOT=R'
 
