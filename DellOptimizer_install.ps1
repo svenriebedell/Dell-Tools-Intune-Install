@@ -31,7 +31,7 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Optimizer%'" | select -ExpandProperty Version
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Optimizer%'" | Select-Object -ExpandProperty Version
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
