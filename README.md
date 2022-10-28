@@ -8,7 +8,7 @@
 This repository provide Deployment Guide and scripts you can use to install Dell Client Management Tools in Microsoft Endpoint Manager.
 You will find for all Applications scripts for install, uninstall and detection. The most of install scripts include a automatically uninstall of older version. For Dell Optimizer we use an inplace update and no uninstall in reason of using existing User configuration of Dell Optimizer in newer version as well. For Trusted Device we use inplace update to reduce the count of reboots.
 
-This and more you will find in Deployment Guide **Install_Instruction_Dell_Tools_with_ MEM_V1_1.pdf**
+This and more you will find in Deployment Guide **Install_Instruction_Dell_Tools_with_ MEM_V1_1_1.pdf**
 
 This Guide covers deployment of the following **Dell Tools**
 Dell Command | Monitor
