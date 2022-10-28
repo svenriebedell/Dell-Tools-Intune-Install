@@ -2,6 +2,7 @@
 
 ## Changelog:
 1.0.0   initial version
+1.1.1   Updating some Text in Deployment Instruction like. DDM2.0 download
 
 ## Description
 This repository provide Deployment Guide and scripts you can use to install Dell Client Management Tools in Microsoft Endpoint Manager.
