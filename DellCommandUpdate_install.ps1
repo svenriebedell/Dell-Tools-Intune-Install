@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1
+_version_ = 1.2
 _Dev_Status_ = Test
 Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -20,6 +20,7 @@ limitations under the License.
 
 <#Changelog:
     1.1 adding DCU configurations section after install as optional
+    1.2 correct filter setting for $ProgramVersion_current
 #>
 
 <#
@@ -35,7 +36,7 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Update%'" | Select-Object -ExpandProperty Version
+[Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Command%Update%'" | Select-Object -ExpandProperty Version
 $ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Update%'" | Select-Object -ExpandProperty IdentifyingNumber
 
 ###################################################################
@@ -80,4 +81,4 @@ Start-Process -FilePath "$ProgramPath" -ArgumentList "/s" -Wait
 #.\dcu-cli.exe /configure -updateType='bios,firmware,driver,utility,others'
 
 #Lock setting in UI
-#.\dcu-cli.exe /configure -lockSettings=enable
+#.\dcu-cli.exe /configure -lockSettings=enable
