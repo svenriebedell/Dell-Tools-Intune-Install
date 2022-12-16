@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.1
 _Dev_Status_ = Test
 Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -18,6 +18,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #>
 
+<#Changelog
+1.1 Update Filter
+#>
+
 <#
 .Synopsis
    This PowerShell is for uninstall in Microsoft MEM for Dell Command | Update
@@ -28,7 +32,7 @@ limitations under the License.
 #>
 
 ##### Variables
-$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Update%'" | Select-Object -ExpandProperty IdentifyingNumber
+$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell Command%Update%'" | Select-Object -ExpandProperty IdentifyingNumber
 
 
 ###################################################################
