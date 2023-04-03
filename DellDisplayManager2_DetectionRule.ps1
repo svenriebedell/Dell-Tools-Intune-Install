@@ -1,4 +1,4 @@
-﻿<#
+<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.0
@@ -31,7 +31,7 @@ limitations under the License.
 # Program with target Version
 ######################################################################################################################
 $ProgramPath = "C:\Program Files\Dell\Dell Display Manager 2\DDM.exe"
-$ProgramVersion_target = '2.1.0.45' 
+$ProgramVersion_target = '2.1.1.17' 
 $ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ProgramPath).FileVersion
 
 if($ProgramVersion_current -ge $ProgramVersion_target)
