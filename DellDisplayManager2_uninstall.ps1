@@ -1,4 +1,4 @@
-﻿<#
+<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.0
@@ -40,4 +40,4 @@ $ApplicationID_current = $ApplicationID_current
 $IDProcess = Get-Process | Where-Object {$_.ProcessName -like 'ddm'} | Select-Object -ExpandProperty ID
 Stop-Process -Id $IDProcess -Force
 
-Start-Process $ApplicationID_current -ArgumentList '/S' -Wait
+Start-Process $ApplicationID_current -ArgumentList '/S' -Wait -NoNewWindow
