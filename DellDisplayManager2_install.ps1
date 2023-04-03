@@ -1,9 +1,9 @@
-﻿<#
+<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.0
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright © 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -55,7 +55,7 @@ If ($null -ne $ProgramVersion_current)
                 }
             
             
-            Start-Process $ApplicationID_current -ArgumentList '/S' -Wait
+            Start-Process $ApplicationID_current -ArgumentList '/S' -Wait -NoNewWindow
 
             Start-Sleep -Seconds 10
     
@@ -76,5 +76,6 @@ Else
 ###################################################################
 #Install new Software                                             #
 ###################################################################
-
-Start-Process -FilePath ".\ddmsetup.exe" -ArgumentList '/verysilent /noupdate'
+$ArgList = '/verysilent /NotifyUpdate=”disable”'
+Start-Process -FilePath ".\ddmsetup.exe" -ArgumentList $ArgList -Wait -NoNewWindow
+Start-Sleep -Seconds 10
