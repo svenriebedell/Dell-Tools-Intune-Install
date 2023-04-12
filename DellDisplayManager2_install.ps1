@@ -31,42 +31,43 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -match "Dell Display Manager" } | Select-Object -ExpandProperty DisplayVersion
-$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -match "Dell Display Manager" } | Select-Object -ExpandProperty UninstallString
+$ApplicationID_current = "C:\Program Files\Dell\Dell Display Manager 2\Uninst.exe"
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
 ###################################################################
 
-If ($null -ne $ProgramVersion_current)
+If ((test-Path -Path "C:\Program Files\Dell\Dell Display Manager 2\ddm.exe") -eq $true )
     {
+        # get version of existing installation
+        [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM2.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
 
+        if ($ProgramVersion_target -gt $ProgramVersion_current)
+            {
+        
+                $IDProcess = Get-Process | Where-Object {$_.ProcessName -ceq 'DDM'} | Select-Object -ExpandProperty ID
 
-    if ($ProgramVersion_target -gt $ProgramVersion_current)
-        {
-    
-            $IDProcess = Get-Process | Where-Object {$_.ProcessName -like 'ddm'} | Select-Object -ExpandProperty ID
+                if ($null -ne $IDProcess)
+                    {
 
-            if ($null -ne $IDProcess)
-                {
+                        Stop-Process -Id $IDProcess -Force
 
-                    Stop-Process -Id $IDProcess -Force
+                    }
+                
+                
+                Start-Process -FilePath $ApplicationID_current -ArgumentList "/S" -Wait
 
-                }
+                Start-Sleep -Seconds 10
+        
+            }
+
+        Else
+            {
             
-            
-            Start-Process $ApplicationID_current -ArgumentList '/S' -Wait -NoNewWindow
+                Write-Host "This version is allready installed"
+                Exit 0
 
-            Start-Sleep -Seconds 10
-    
-        }
-
-    Else
-        {
-        Write-Host "This version is allready installed"
-        Exit 0
-
-        }
+            }
     }
 Else
     {
@@ -76,6 +77,5 @@ Else
 ###################################################################
 #Install new Software                                             #
 ###################################################################
-$ArgList = '/verysilent /NotifyUpdate=”disable”'
-Start-Process -FilePath ".\ddmsetup.exe" -ArgumentList $ArgList -Wait -NoNewWindow
+Start-Process -FilePath $ProgramPath -ArgumentList '/verysilent /NotifyUpdate=”disable”'
 Start-Sleep -Seconds 10
