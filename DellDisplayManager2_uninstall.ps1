@@ -28,16 +28,13 @@ limitations under the License.
 #>
 
 ##### Variables
-$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -match "Dell Display Manager" } | Select-Object -ExpandProperty UninstallString
-
-$ApplicationID_current = $ApplicationID_current
-
+$ApplicationID_current = "C:\Program Files\Dell\Dell Display Manager 2\Uninst.exe"
 
 ###################################################################
 #uninstall Software                                               #
 ###################################################################
 
-$IDProcess = Get-Process | Where-Object {$_.ProcessName -like 'ddm'} | Select-Object -ExpandProperty ID
+$IDProcess = Get-Process | Where-Object {$_.ProcessName -ceq 'DDM'} | Select-Object -ExpandProperty ID
 Stop-Process -Id $IDProcess -Force
 
-Start-Process $ApplicationID_current -ArgumentList '/S' -Wait -NoNewWindow
+Start-Process $ApplicationID_current -ArgumentList '/S' -Wait
