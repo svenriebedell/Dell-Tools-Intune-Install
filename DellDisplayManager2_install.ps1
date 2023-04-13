@@ -40,7 +40,7 @@ $ApplicationID_current = "C:\Program Files\Dell\Dell Display Manager 2\Uninst.ex
 If ((test-Path -Path "C:\Program Files\Dell\Dell Display Manager 2\ddm.exe") -eq $true )
     {
         # get version of existing installation
-        [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM2.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
+        [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
 
         if ($ProgramVersion_target -gt $ProgramVersion_current)
             {
