@@ -19,6 +19,14 @@ limitations under the License.
 #>
 
 <#
+
+Changelog
+    1.0.0 initial version
+    1.0.1 change App look up
+
+#>
+
+<#
 .Synopsis
    This PowerShell is for installation in Microsoft MEM for Dell Command | Configure
 
@@ -31,7 +39,7 @@ limitations under the License.
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft .NET Runtime - 6.*(x64)" } | Select-Object -ExpandProperty DisplayVersion
+[Version]$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 6*(x64)*" } | Select-Object -ExpandProperty DisplayVersion
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
