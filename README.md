@@ -5,7 +5,7 @@ Latest Version of document: **1.2.3**
 ## Changelog:
 - 1.0.0   initial version
 - 1.1.1   Updating some Text in Deployment Instruction like. DDM2.0 download
-- 1.2.0   + renaming to Microsoft Intune  + Add separat informations and script to support Dell Display Manager 2.x + Add dependency app informations to Dell Optimizer to cover required .net 6 runtime sind optimizer 4.0.201.0
+- 1.2.0   + renaming to Microsoft Intune  + Add separat informations and script to support Dell Display Manager 2.x + Add dependency app informations to Dell Optimizer to cover required .net 6 runtime since optimizer 4.0.201.0
 - 1.2.1   Correct Display Manager 2 Install/Uninstall to run with PowerShell 32 Bit
 - 1.2.2	  Update Install instruction Dell Support Assist, add .net 6.x dependency
 - 1.2.3   Add Dell Peripheral Manager to this document
