@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.0.1
 _Dev_Status_ = Test
 Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -19,6 +19,13 @@ limitations under the License.
 #>
 
 <#
+Changelog
+    1.0.0 initial version
+    1.0.1 change App look up
+
+#>
+
+<#
 .Synopsis
    This PowerShell is for uninstall Microsoft .net 6.x runtime by Intune
 
@@ -28,7 +35,7 @@ limitations under the License.
 #>
 
 ##### Variables
-$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft .NET Runtime - 6.*(x64)" } | Select-Object -ExpandProperty Quietuninstallstring 
+$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 6*(x64)*" } | Select-Object -ExpandProperty Quietuninstallstring 
 
 
 ###################################################################
