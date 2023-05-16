@@ -30,7 +30,7 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '6.0.15.32215' # need to be the same like the exe file
+$ProgramVersion_target = '6.0.16.32327' # need to be the same like the exe file
 $ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft .NET Runtime - 6.*(x64)" } | Select-Object -ExpandProperty DisplayVersion
 
 if($ProgramVersion_current -eq $ProgramVersion_target)
