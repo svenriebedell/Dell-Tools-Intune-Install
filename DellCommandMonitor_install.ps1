@@ -1,9 +1,9 @@
-﻿<#
+<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.1.0
 _Dev_Status_ = Test
-Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright (c)2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -71,7 +71,7 @@ $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
 $AppSearch = "%Dell%Monitor%" #Parameter to search in registry
 $UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Monitor*"}
-$SoftwareName = $UninstallApp.Name
+$SoftwareName = "Dell Command | Monitor"
 [Version]$ProgramVersion_current = $UninstallApp.Version
 
 ##############################################
@@ -165,8 +165,6 @@ Start-Process -FilePath "$ProgramPath" -ArgumentList "/s" -Wait
 #############################
 # install success check     #
 #############################
-$UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Monitor*"}
-$SoftwareName = $UninstallApp.Name
 $UninstallResult = Get-installedcheck -AppSearchString $AppSearch
 
 If ($UninstallResult -ne $true)
