@@ -1,4 +1,4 @@
-﻿<#
+<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.3.0
@@ -175,7 +175,7 @@ If ($UninstallResult -ne $true)
         Write-Host "install is unsuccessful" -BackgroundColor Red
             
         $UninstallData = [PSCustomObject]@{
-                                            Software = $SoftwareName
+                                            Software = "Dell Command | Update Classic/UWP"
                                             Version = ($ProgramVersion_target).ToString()
                                             Install = $false
                                             Reason = "Installation failed"
