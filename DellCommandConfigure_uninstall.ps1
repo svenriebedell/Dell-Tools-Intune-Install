@@ -68,7 +68,7 @@ function Get-installedcheck
 $UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Command*Configure"}
 $AppSearch = "%Dell%Configure%" #Parameter to search in registry
 $Program_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'"
-$SoftwareName = $Program_current.Name
+$SoftwareName = "Dell Command | Configure"
 
 ##############################################
 #### program section                      ####
