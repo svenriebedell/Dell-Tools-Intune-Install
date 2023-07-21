@@ -30,7 +30,7 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '1.6.6' # need to be the same like the exe file
+$ProgramVersion_target = '1.6.7' # need to be the same like the exe file
 [Version]$ProgramVersion_current = (Get-ItemProperty 'C:\Program Files\Dell\Dell Peripheral Manager\DPM.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
 
 if($ProgramVersion_current -eq $ProgramVersion_target)

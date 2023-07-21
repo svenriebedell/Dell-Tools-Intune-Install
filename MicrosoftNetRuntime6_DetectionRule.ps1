@@ -1,9 +1,9 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.0.0
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright © 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -30,10 +30,10 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '6.0.16.32327' # need to be the same like the exe file
-$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft .NET Runtime - 6.*(x64)" } | Select-Object -ExpandProperty DisplayVersion
+$ProgramVersion_target = '6.0.20.32621' # need to be the same like the exe file
+$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft*Windows*Desktop*Runtime*6*(x64)*" } | Select-Object -ExpandProperty DisplayVersion
 
-if($ProgramVersion_current -eq $ProgramVersion_target)
+if($ProgramVersion_current -ge $ProgramVersion_target)
     {
         Write-Host "Found it!"
     }

@@ -1,9 +1,9 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.1.0
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -18,6 +18,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #>
 
+<#Change log
+    
+    1.0.0   initial version
+    1.1.0   add function get-installedcheck to control if uninstall is successful
+            add MS EventLog LogName "Dell" Source "Dell Software Uninstall"
+
+#>
+
 <#
 .Synopsis
    This PowerShell is for uninstall in Microsoft MEM for Dell Power Manager
@@ -27,12 +35,85 @@ limitations under the License.
    
 #>
 
-##### Variables
-$ApplicationID_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Power%Manager%'" | Select-Object -ExpandProperty IdentifyingNumber
+##############################################
+#### Function section                     ####
+##############################################
 
+function Get-installedcheck
+    {
+
+        param
+            (
+                [Parameter(mandatory=$true)][string] $AppSearchString
+            )
+
+
+        $AppCheck = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearchString'"
+
+        If ($null -ne $AppCheck)
+            {
+                return $true
+            }
+        Else
+            {
+                return $false
+            }
+
+    }
+
+##############################################
+#### variable section                     ####
+##############################################
+$AppSearch = "%Dell%Power%Manager%" #Parameter to search in registry
+$Program_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'"
+$SoftwareName = $Program_current.Name
+$ApplicationID_current = $Program_current.IdentifyingNumber
+
+##############################################
+#### program section                      ####
+##############################################
+
+#### generate Logging Resources
+New-EventLog -LogName "Dell" -Source "Dell Software Install" -ErrorAction Ignore
+New-EventLog -LogName "Dell" -Source "Dell Software Uninstall" -ErrorAction Ignore
 
 ###################################################################
 #uninstall Software                                               #
 ###################################################################
 
 Start-Process -FilePath msiexec.exe -ArgumentList "/x $ApplicationID_current /qn" -Wait
+
+#############################
+# uninstall success check   #
+#############################
+$UninstallResult = Get-installedcheck -AppSearchString $AppSearch
+
+If ($UninstallResult -eq $true)
+    {
+
+        Write-Host "uninstall is unsuccessful" -BackgroundColor Red
+
+        $UninstallData = [PSCustomObject]@{
+                                              Software = $SoftwareName
+                                              Version = $Program_current.Version
+                                              Uninstall = $false
+                                          } | ConvertTo-Json
+                
+        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Error -EventId 11 -Message $UninstallData
+
+
+    }
+Else
+    {
+
+        Write-Host "uninstall is successful" -BackgroundColor Green
+
+        $UninstallData = [PSCustomObject]@{
+                                            Software = $SoftwareName
+                                            Version = $Program_current.Version
+                                            Uninstall = $true
+                                          } | ConvertTo-Json
+                
+        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+
+    }

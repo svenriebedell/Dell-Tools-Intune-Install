@@ -19,9 +19,11 @@ limitations under the License.
 #>
 
 <#
-Changelog
-    1.0.0 initial version
-    1.0.1 change App look up
+Change log
+    
+    1.0.0   initial version
+    1.0.1   change App look up
+    1.1.0   add function get-installedcheck to control if uninstall/install is successful
 
 #>
 
@@ -34,8 +36,46 @@ Changelog
    
 #>
 
+##############################################
+#### Function section                     ####
+##############################################
+
+function Get-installedcheck
+    {
+
+        param
+            (
+                [Parameter(mandatory=$true)][string] $AppSearchString
+            )
+
+
+        $AppCheck = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearchString'"
+
+        If ($null -ne $AppCheck)
+            {
+                return $true
+            }
+        Else
+            {
+                return $false
+            }
+
+    }
+
+##############################################
+#### variable section                     ####
+##############################################
+$UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Command*Configure"}
+
+
+
 ##### Variables
 $ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 6*(x64)*" } | Select-Object -ExpandProperty Quietuninstallstring 
+$AppSearch = "Microsoft%Windows%%Runtime%6%(x64)%" #Parameter to search in registry
+
+##############################################
+#### program section                      ####
+##############################################
 
 
 ###################################################################
@@ -43,3 +83,23 @@ $ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsof
 ###################################################################
 
 Start-Process cmd.exe -ArgumentList '/c',$ApplicationID_current -Wait -NoNewWindow
+
+#############################
+# uninstall success check   #
+#############################
+$UninstallResult = Get-installedcheck -AppSearchString $AppSearch
+
+If ($UninstallResult -eq $true)
+    {
+
+        Write-Host "uninstall is unsuccessful" -BackgroundColor Red
+        #Exit 1
+
+    }
+Else
+    {
+
+        Write-Host "uninstall is successful" -BackgroundColor Green
+        #Exit 0
+
+    }

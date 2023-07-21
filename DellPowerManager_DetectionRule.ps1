@@ -3,7 +3,7 @@ _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.0
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright © 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -30,7 +30,7 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '3.11.0' # need to be the same like the exe file 
+$ProgramVersion_target = '3.14.0' # need to be the same like the exe file 
 $ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Power%Manager%'" | select -ExpandProperty Version
 
 if($ProgramVersion_current -eq $ProgramVersion_target)

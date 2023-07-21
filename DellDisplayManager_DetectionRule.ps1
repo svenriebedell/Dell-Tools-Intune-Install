@@ -31,7 +31,7 @@ limitations under the License.
 # Program with target Version
 ######################################################################################################################
 $ProgramPath = "C:\Program Files (x86)\Dell\Dell Display Manager\ddm.exe"
-$ProgramVersion_target = '1.56.0.2107' # need to be the same like the exe file
+$ProgramVersion_target = '1.56.0.2109' # need to be the same like the exe file
 $ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ProgramPath).FileVersion
 
 if($ProgramVersion_current -eq $ProgramVersion_target)
