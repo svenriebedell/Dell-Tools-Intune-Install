@@ -1,9 +1,9 @@
-﻿<#
+<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.1.0
 _Dev_Status_ = Test
-Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright (c)2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -68,7 +68,7 @@ function Get-installedcheck
 $UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Monitor*"}
 $AppSearch = "%Dell%Monitor%" #Parameter to search in registry
 $Program_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'"
-$SoftwareName = $Program_current.Name
+$SoftwareName = "Dell Command | Monitor"
 
 ##############################################
 #### program section                      ####
