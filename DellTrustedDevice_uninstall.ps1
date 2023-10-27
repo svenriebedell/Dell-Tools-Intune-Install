@@ -1,7 +1,7 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.0
+_version_ = 1.1.1
 _Dev_Status_ = Test
 Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -22,6 +22,7 @@ limitations under the License.
    1.0.0   initial version
    1.1.0   add function get-installedcheck to control if uninstall is successful
            add MS EventLog LogName "Dell" Source "Dell Software Uninstall"
+   1.1.1   change MSI uninstall parameter to 'REBOOT=ReallySuppress'
 
 #>
 
@@ -66,7 +67,7 @@ function Get-installedcheck
 ##############################################
 $AppSearch = "%Dell%Trusted%Device%" #Parameter to search in registry
 $Program_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'"
-$ArgumentString = '/i "'+$ProgramPath + '" /qn REBOOT=R'
+$ArgumentString = '/i "'+$ProgramPath + '" /qn REBOOT=ReallySuppress'
 $SoftwareName = $Program_current.Name
 $ApplicationID_current = $Program_current.IdentifyingNumber
 
