@@ -35,7 +35,10 @@ limitations under the License.
 
 #>
 
-##### Variables
+##############################################
+#### Variables section                    ####
+##############################################
+
 
 $WebViewUninstall = $false  # $true/$false to enable/disable uninstall of Microsoft Edge WebView2, be careful and check if other applications need this app before you uninstall this software
 $RuntimeUninstall = $false  # $true/$false to enable/disable uninstall of Microsoft Windows Desktop Runtime 6.x, be careful and check if other applications need this app before you uninstall this software
