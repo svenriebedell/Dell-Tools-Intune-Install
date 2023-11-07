@@ -1,7 +1,7 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.0
+_version_ = 1.1.1
 _Dev_Status_ = Test
 Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -24,6 +24,7 @@ Change Log
     1.0.0   initial version
     1.1.0   add function get-installedcheck to control if uninstall/install is successful
             add MS EventLog LogName "Dell" Source "Dell Software Install" and "Dell Software Uninstall"
+    1.1.1   Dell Support Assist Team renamed MST File to cover this flexible in future now MST will handle by Variable
 
 #>
 
@@ -106,13 +107,16 @@ function Get-MsiFileVersion {
 #### variable section                     ####
 ##############################################
 $InstallerName = Get-ChildItem .\*.msi | Select-Object -ExpandProperty Name
+$MSTName = Get-ChildItem .\*.mst | Select-Object -ExpandProperty Name
 $ProgramPath = $InstallerName
+$MSTPath = $MSTName
 $ProgramVersion_target = Get-MsiFileVersion -msiName $InstallerName
 $AppSearch = "%Dell%Support%Business%" #Parameter to search in registry
 $Program_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'"
 [Version]$ProgramVersion_current = $Program_current.Version
 $ApplicationID_current = $Program_current.IdentifyingNumber
-$Argumentstring = '/i ' + '"' + $ProgramPath + '" TRANSFORMS="SupportAssistConfig.mst" DEPLOYMENTKEY="Dell2023#" /qn'  #Your Deployment Key you generated before with the installer
+$Argumentstring = "/i " + '"' + $ProgramPath + '" TRANSFORMS="' + $MSTPath + '" DEPLOYMENTKEY="Dell2023#" /norestart /qn /l+ "c:\SupportAssistMsi.log"'  #Your Deployment Key you generated before with the installer
+
 $SoftwareName = $Program_current.Name
 
 
