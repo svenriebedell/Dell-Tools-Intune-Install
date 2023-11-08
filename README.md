@@ -1,6 +1,6 @@
 # Deployment Guide for Dell Client Management Tools for Microsoft Intune
 
-Latest Version of document: **1.2.3**
+Latest Version of document: **1.2.5**
 
 ## Changelog:
 - 1.0.0   initial version
@@ -9,6 +9,8 @@ Latest Version of document: **1.2.3**
 - 1.2.1   Correct Display Manager 2 Install/Uninstall to run with PowerShell 32 Bit
 - 1.2.2	  Update Install instruction Dell Support Assist, add .net 6.x dependency
 - 1.2.3   Add Dell Peripheral Manager to this document
+- 1.2.4 - Update Dell Trusted Device section from MSI to DUP deployment/Add MS Event logging for install and uninstall scripts
+- 1.2.5 - Update on section Dell Support Assist for Business PC on prepare MSI and MST and update for the Install Script
 
 
 ## Description
