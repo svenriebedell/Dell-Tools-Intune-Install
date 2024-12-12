@@ -1,9 +1,9 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0.1
+_version_ = 1.0.0
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright© 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -22,17 +22,15 @@ limitations under the License.
 Change log
     
     1.0.0   initial version
-    1.0.1   change App look up
-    1.1.0   add function get-installedcheck to control if uninstall/install is successful
 
 #>
 
 <#
 .Synopsis
-   This PowerShell is for uninstall Microsoft .net 6.x runtime by Intune
+   This PowerShell is for uninstall Microsoft .net 8.x runtime by Intune
 
 .DESCRIPTION
-   This PowerShell will uninstall Microsoft .net 6.x runtime on the device. It will be used as install file in Microsoft MEM win32 install.
+   This PowerShell will uninstall Microsoft .net 8.x runtime on the device. It will be used as install file in Microsoft MEM win32 install.
    
 #>
 
@@ -65,13 +63,10 @@ function Get-installedcheck
 ##############################################
 #### variable section                     ####
 ##############################################
-$UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Command*Configure"}
-
-
 
 ##### Variables
-$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 6*(x64)*" } | Select-Object -ExpandProperty Quietuninstallstring 
-$AppSearch = "Microsoft%Windows%%Runtime%6%(x64)%" #Parameter to search in registry
+$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 8*(x64)*" } | Select-Object -ExpandProperty Quietuninstallstring 
+$AppSearch = "Microsoft%Windows%%Runtime%8%(x64)%" #Parameter to search in registry
 
 ##############################################
 #### program section                      ####

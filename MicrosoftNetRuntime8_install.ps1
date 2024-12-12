@@ -1,9 +1,9 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.0
+_version_ = 1.0.0
 _Dev_Status_ = Test
-Copyright © 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright © 2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -22,17 +22,15 @@ limitations under the License.
 
 Changelog
     1.0.0   initial version
-    1.0.1   change App look up
-    1.1.0   add function get-installedcheck to control if uninstall/install is successful
 
 #>
 
 <#
 .Synopsis
-   This PowerShell is for installation in Microsoft MEM for Dell Command | Configure
+   This PowerShell is for install Microsoft .net 8.x runtime by Intune
 
 .DESCRIPTION
-   This PowerShell will install/Update a Device for Dell Command | Configure. It will be used as install file in Microsoft MEM win32 install.
+   This PowerShell will install Microsoft .net 8.x runtime on the device. It will be used as install file in Microsoft MEM win32 install.
    
 #>
 
@@ -40,7 +38,6 @@ Changelog
 ##############################################
 #### Function section                     ####
 ##############################################
-
 function Get-installedcheck
     {
 
@@ -68,9 +65,10 @@ function Get-installedcheck
 ##############################################
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
-$AppSearch = "Microsoft%Windows%%Runtime%6%(x64)%" #Parameter to search in registry
+$ApplicationID_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 8*(x64)*" } | Select-Object -ExpandProperty Quietuninstallstring 
+$AppSearch = "Microsoft%Windows%%Runtime%8%(x64)%" #Parameter to search in registry
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-[Version]$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 6*(x64)*" } | Select-Object -ExpandProperty DisplayVersion
+[Version]$ProgramVersion_current = Get-ChildItem -Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -like "Microsoft Windows Desktop Runtime - 8*(x64)*" } | Select-Object -ExpandProperty DisplayVersion
 
 ###################################################################
 #Checking if older Version is installed and uninstall this Version#
