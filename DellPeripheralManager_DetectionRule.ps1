@@ -30,10 +30,19 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '1.6.7' # need to be the same like the exe file
-[Version]$ProgramVersion_current = (Get-ItemProperty 'C:\Program Files\Dell\Dell Peripheral Manager\DPM.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
+$ProgramVersion_target = '1.7.7' # need to be the same like the exe file
+$filePath = 'C:\Program Files\Dell\Dell Peripheral Manager\DPM.exe'
 
-if($ProgramVersion_current -eq $ProgramVersion_target)
+if (Test-Path $filePath)
+    {
+        [Version]$ProgramVersion_current = (Get-ItemProperty $filePath).VersionInfo | Select-Object -ExpandProperty ProductVersion
+    }
+else
+    {
+        Write-Output "File not found."
+    }
+
+if($ProgramVersion_current -ge $ProgramVersion_target)
     {
         Write-Host "Found it!"
     }
