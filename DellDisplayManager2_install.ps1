@@ -3,7 +3,7 @@ _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.1.0
 _Dev_Status_ = Test
-Copyright (c)2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright (c)2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -24,6 +24,7 @@ Change Log
     1.0.0   initial version
     1.1.0   add function get-installedcheck to control if uninstall/install is successful
             add MS EventLog LogName "Dell" Source "Dell Software Install" and "Dell Software Uninstall"
+    1.1.1   correct issue to get program version
 
 #>
 
@@ -78,7 +79,7 @@ function Get-installedcheck
 ##############################################
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
-[Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
+[Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.FileVersion
 $AppSearch = "ddm.exe" #Parameter to search in registry
 $SoftwareName = "Dell Display Manager 2"
 
@@ -105,7 +106,7 @@ If ((Get-installedcheck) -eq $true )
             {
             
                 # get version of existing installation based old folder
-                [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2.0\DDM.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
+                [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2.0\DDM.exe').VersionInfo | Select-Object -ExpandProperty FileVersion
                 $ApplicationID_current = "C:\Program Files\Dell\Dell Display Manager 2.0\Uninst.exe"
             
             }
@@ -113,7 +114,7 @@ If ((Get-installedcheck) -eq $true )
             {
                 
                 # get version of existing installation based new folder
-                [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
+                [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM.exe').VersionInfo | Select-Object -ExpandProperty FileVersion
                 $ApplicationID_current = "C:\Program Files\Dell\Dell Display Manager 2\Uninst.exe"
             
             }
@@ -227,7 +228,7 @@ If ($UninstallResult -ne $true)
 Else
     {
 
-       [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM.exe').VersionInfo | Select-Object -ExpandProperty ProductVersion
+       [Version]$ProgramVersion_current = (Get-ItemProperty -Path 'C:\Program Files\Dell\Dell Display Manager 2\DDM.exe').VersionInfo | Select-Object -ExpandProperty FileVersion
 
        If ($ProgramVersion_current -ge $ProgramVersion_target)
             {
