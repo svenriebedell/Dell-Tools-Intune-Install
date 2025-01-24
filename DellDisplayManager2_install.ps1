@@ -25,6 +25,7 @@ Change Log
     1.1.0   add function get-installedcheck to control if uninstall/install is successful
             add MS EventLog LogName "Dell" Source "Dell Software Install" and "Dell Software Uninstall"
     1.1.1   correct issue to get program version
+    1.1.2   adding disable Telemetry to the install parameter
 
 #>
 
@@ -202,7 +203,7 @@ Else
 ###################################################################
 #Install new Software                                             #
 ###################################################################
-Start-Process -FilePath $ProgramPath -ArgumentList '/verysilent /NotifyUpdate="disable"'
+Start-Process -FilePath $ProgramPath -ArgumentList '/verysilent /TelemetryConsent="disable" /NotifyUpdate="disable"'
 Start-Sleep -Seconds 10
 
 #############################
