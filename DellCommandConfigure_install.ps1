@@ -1,7 +1,7 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.0
+_version_ = 1.1.1
 _Dev_Status_ = Test
 Copyright (c)2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -25,6 +25,7 @@ Change Log
     1.1.0   problems with GUID move to PackageCache to uninstall MSI.
             add function get-installedcheck to control if uninstall/install is successful
             add MS EventLog LogName "Dell" Source "Dell Software Install" and "Dell Software Uninstall"
+    1.1.1   correct identification in case Dell Command | Endpoint Configure is install on device too
 
 #>
 
@@ -50,7 +51,7 @@ function Get-installedcheck
             )
 
 
-        $AppCheck = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearchString'"
+        $AppCheck = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like $AppSearchString}
 
         If ($null -ne $AppCheck)
             {
@@ -69,8 +70,8 @@ function Get-installedcheck
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.ProductVersion
-$AppSearch = "%Dell%Configure%" #Parameter to search in registry
-$UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Command*Configure"}
+$AppSearch = "*Dell*Configure*" #Parameter to search in registry
+$UninstallApp = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like $AppSearch}
 $SoftwareName = "Dell Command | Configure"
 [Version]$ProgramVersion_current = $UninstallApp.Version
 
@@ -186,7 +187,7 @@ If ($UninstallResult -ne $true)
 Else
     {
 
-       [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'" | Select-Object -ExpandProperty Version
+       [Version]$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like $AppSearch} | Select-Object -ExpandProperty Version
 
        If ($ProgramVersion_current -ge $ProgramVersion_target)
             {

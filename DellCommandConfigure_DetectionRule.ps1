@@ -1,9 +1,9 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.1
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright © 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -16,6 +16,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+#>
+
+<#
+
+Change Log
+    1.0.0   initial version
+    1.1.0   correct identification in case Dell Command | Endpoint Configure is install on device too
+
 #>
 
 <#
@@ -30,10 +40,10 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramVersion_target = '4.7.0.433' # need to be the same like the exe file
-$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Configure%'" | Select-Object -ExpandProperty Version
+$ProgramVersion_target = '5.1.0.24' # need to be the same like the exe file
+$ProgramVersion_current = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like'*Dell*Configure*'} | Select-Object -ExpandProperty Version
 
-if($ProgramVersion_current -eq $ProgramVersion_target)
+if($ProgramVersion_current -ge $ProgramVersion_target)
     {
         Write-Host "Found it!"
     }

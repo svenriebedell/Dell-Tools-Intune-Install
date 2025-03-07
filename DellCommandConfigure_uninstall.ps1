@@ -1,9 +1,9 @@
 ﻿<#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.0
+_version_ = 1.1.1
 _Dev_Status_ = Test
-Copyright © 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright © 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -24,6 +24,8 @@ limitations under the License.
     1.1.0   problems with GUID move to PackageCache to uninstall MSI.
             add function get-installedcheck to control if uninstall is successful
             add MS EventLog LogName "Dell" Source "Dell Software Uninstall"
+    1.1.1   correct identification in case Dell Command | Endpoint Configure is install on device too
+
 
 #>
 
@@ -49,7 +51,7 @@ function Get-installedcheck
             )
 
 
-        $AppCheck = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearchString'"
+        $AppCheck = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like'$AppSearchString'}
 
         If ($null -ne $AppCheck)
             {
@@ -65,9 +67,9 @@ function Get-installedcheck
 ##############################################
 #### variable section                     ####
 ##############################################
-$UninstallApp = Get-CimInstance -ClassName Win32_Product | Where-Object {$_.Name -like "Dell*Command*Configure"}
-$AppSearch = "%Dell%Configure%" #Parameter to search in registry
-$Program_current = Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'"
+$AppSearch = "*Dell*Configure*" #Parameter to search in registry
+$UninstallApp = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like $AppSearch}
+$Program_current = Get-CimInstance -ClassName Win32_Product | where-object {$_.Name -notlike "*Endpoint*" -and $_.Name -like $AppSearch}
 $SoftwareName = "Dell Command | Configure"
 
 ##############################################
