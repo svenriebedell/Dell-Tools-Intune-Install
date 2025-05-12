@@ -1,9 +1,9 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0.0
+_version_ = 1.0.1
 _Dev_Status_ = Test
-Copyright (c)2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright (c)2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -22,6 +22,7 @@ limitations under the License.
 
 Change Log
     1.0.0   initial version
+    1.0.1   File detection from ddpm to setup because of detect DDPM as well with a headless installation too
 
 #>
 
@@ -65,11 +66,17 @@ function Get-installedcheck
 ##############################################
 $InstallerName = Get-ChildItem .\*.exe | Select-Object -ExpandProperty Name
 $ProgramPath = ".\" + $InstallerName
-$ProgramPathInstall = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\"
-$ProgramNameInstall = "DDPM.exe"
+$ProgramPathInstall = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\Installer\"
+$ProgramPathInstallFull = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\"
+$ProgramPathUninstall = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\Installer\"
+$ProgramNameInstall = "setup.exe"
+$ProgramNameInstallFull = "ddpm.exe"
+$ProgramNameUninstall = "setup.exe"
 [Version]$ProgramVersion_target = (Get-Command $ProgramPath).FileVersionInfo.FileVersion
 $SoftwareName = "Dell Display and Peripheral Manager"
-$Argument = "/Silent /TelemetryConsent=false /InAppUpdateLock"
+$ArgumentInstall = "/silent /HeadlessMode=false /InAppUpdateLock /TelemetryConsent=false"
+$ArgumentUninstall = "/uninst /Silent"
+$UIProcess = "ddpm"
 
 ##############################################
 #### program section                      ####
@@ -89,14 +96,37 @@ $ExistCheck = Get-installedcheck -FilePath $ProgramPathInstall -FileName $Progra
 If ($ExistCheck -eq $true )
     {
         # get version of program
-        [Version]$ProgramVersion_current = (Get-Command $ProgramPathInstall$ProgramNameInstall).FileVersionInfo.FileVersion
+        try
+            {
+                # check headless or full install DDPM
+                $FullInstall = Join-Path $ProgramPathInstallFull $ProgramNameInstallFull
+                $CheckInstallType = Test-Path $FullInstall
+
+                If($CheckInstallType -eq $true)
+                    {
+                        # DDPM Full installed
+                        $ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FullInstall).FileVersion
+                    }
+                else
+                    {
+                        # DDPM Headless installed or not installed
+                        $HeadlessInstall = Join-Path $ProgramPathInstall $ProgramNameInstall
+                        $ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($HeadlessInstall).FileVersion
+                    }
+            }
+        catch
+            {
+                Write-Error "File not found"
+                exit 1
+            }
 
         if ($ProgramVersion_target -gt $ProgramVersion_current)
             {
                 # uninstall Software
                 try
                     {
-                        Start-Process -FilePath $ProgramPathUninstall$ProgramNameUninstall -ArgumentList $Argument -Wait -ErrorAction Stop
+                        $Uninstall = Join-Path $ProgramPathUninstall $ProgramNameUninstall
+                        Start-Process -FilePath $Uninstall -ArgumentList $ArgumentUninstall -Wait -ErrorAction Stop
 
                         Write-Host "uninstall is successful" -BackgroundColor Green
 
@@ -150,7 +180,27 @@ Else
 ###################################################################
 try
     {
-        Start-Process -FilePath $ProgramPath -ArgumentList $Argument -Wait -ErrorAction Stop
+        Start-Process -FilePath $ProgramPath -ArgumentList $ArgumentInstall -Wait -ErrorAction Stop
+        
+        # kill UI start
+        $ProcessStart = $false
+
+        while ($ProcessStart -ne $true -and $StopCount -ne 20) 
+            {
+                $CheckProcess = Get-Process -name DDPM -ErrorAction SilentlyContinue
+
+                if ($null -ne $CheckProcess) 
+                    {
+                        Stop-Process -Name $UIProcess -Force
+                        $ProcessStart = $true
+                    }
+                else
+                    {
+                        Start-Sleep -Milliseconds 500
+                        $StopCount += 1
+                    }
+            }
+
         Write-Host "install is successful" -BackgroundColor Green
             
         $UninstallData = [PSCustomObject]@{

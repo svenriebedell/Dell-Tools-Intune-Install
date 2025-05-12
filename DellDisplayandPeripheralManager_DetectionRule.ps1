@@ -1,9 +1,9 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0
+_version_ = 1.0.1
 _Dev_Status_ = Test
-Copyright Â© 2022 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright (C) 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -18,6 +18,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #>
 
+<#Version Changes
+
+    1.0.0     inital version
+    1.0.1     Change Version and validate install type Headless or Full install of DDPM with different files
+#>
+
 <#
 .Synopsis
    This PowerShell is for custom detection in Microsoft MEM for Dell Display Manager
@@ -30,9 +36,33 @@ limitations under the License.
 ######################################################################################################################
 # Program with target Version
 ######################################################################################################################
-$ProgramPath = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\DDPM.exe"
-$ProgramVersion_target = '2.0.0.72' 
-$ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ProgramPath).FileVersion
+$ProgramPathFullMode = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\ddpm.exe"
+$ProgramPathHeadlessMode = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\Installer\setup.exe"
+$ProgramVersion_target = '2.0.2.11' 
+
+try
+    {
+        # check headless or full install DDPM
+        $CheckInstallType = Test-Path $ProgramPathFullMode
+
+        If($CheckInstallType)
+            {
+                # DDPM Full installed
+                $ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ProgramPathFullMode).FileVersion
+            }
+        else
+            {
+                # DDPM Headless installed or not installed
+                $ProgramVersion_current = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ProgramPathHeadlessMode).FileVersion
+            }
+    }
+catch
+    {
+        Write-Error "File not found"
+        exit 1
+    }
+
+# Intune detection return
 
 if($ProgramVersion_current -ge $ProgramVersion_target)
     {

@@ -1,7 +1,7 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.1
+_version_ = 1.0.1
 _Dev_Status_ = Test
 Copyright (c)2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -22,6 +22,7 @@ limitations under the License.
 
 Change Log
     1.0.0   initial version
+    1.0.1   cleanup folder "Dell Display and Peripheral Manager" if parts stay after uninstall
 
 #>
 
@@ -89,7 +90,17 @@ if($CheckInstalled -eq $true)
         # uninstall Software
         try
             {
-                Start-Process -FilePath $ProgramPathUninstall$ProgramNameUninstall -ArgumentList $Argument -Wait -ErrorAction Stop
+                $UninstallPath = Join-Path $ProgramPathUninstall $ProgramNameUninstall
+                Start-Process -WorkingDirectory $ProgramPathUninstall -FilePath $ProgramNameUninstall -ArgumentList $Argument -Wait -ErrorAction Stop
+
+                # check cleanup folder
+                $Checkfolder = Test-Path $ProgramPath
+
+                if($Checkfolder -eq $true)
+                    {
+                        Write-Information "DDPM directory still found will deleted now"
+                        Remove-Item -Path $ProgramPath -Recurse -Force
+                    }
 
                 Write-Host "uninstall is successful" -BackgroundColor Green
 
