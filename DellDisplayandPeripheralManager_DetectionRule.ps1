@@ -38,7 +38,7 @@ limitations under the License.
 ######################################################################################################################
 $ProgramPathFullMode = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\ddpm.exe"
 $ProgramPathHeadlessMode = $env:ProgramFiles + "\Dell\Dell Display and Peripheral Manager\Installer\setup.exe"
-$ProgramVersion_target = '2.0.2.11' 
+$ProgramVersion_target = '2.0.3.9' 
 
 try
     {
@@ -58,7 +58,6 @@ try
     }
 catch
     {
-        Write-Error "File not found"
         exit 1
     }
 
