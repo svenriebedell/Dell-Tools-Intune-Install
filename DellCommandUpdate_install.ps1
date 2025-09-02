@@ -1,9 +1,9 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.3.0
+_version_ = 1.3.1
 _Dev_Status_ = Test
-Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright ©2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -25,6 +25,7 @@ limitations under the License.
     1.3.0   problems with GUID move to PackageCache to uninstall MSI.
             add function get-installedcheck to control if uninstall/install is successful
             add MS EventLog LogName "Dell" Source "Dell Software Install" and "Dell Software Uninstall"
+    1.3.1   solve Problem of identifiy Dell SupportAssist Recovery for optional part DCU configuration
 #>
 
 <#
@@ -226,15 +227,15 @@ Else
     }
 
 
-<#
 
+<#
 ###################################################################
 #Optional configuration DCU                                       #
 ###################################################################
 
 #Select Path of dcu-cli.exe
-$Path = (Get-CimInstance -ClassName Win32_Product -Filter "Name like '%Dell%Update%'").InstallLocation
-cd $Path
+$Path = (Get-CimInstance -ClassName Win32_Product -Filter "Name like '$AppSearch'").InstallLocation
+Set-Location $Path
 
 #Set generic BIOS Password
 .\dcu-cli.exe /configure -biosPassword="Use your BIOS PW here" #please beware it could be visible in log if you don't want this use encryptedPassword and encryptedKey function
