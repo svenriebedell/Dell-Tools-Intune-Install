@@ -1,9 +1,9 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.1.1
+_version_ = 1.1.2
 _Dev_Status_ = Test
-Copyright © 2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+Copyright Â© 2026 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
 
@@ -32,6 +32,7 @@ limitations under the License.
       1.0.0 initial Version
       1.1.0 Solves the problem of renaming the Optimizer service and added uninstalling Microsoft Windows Desktop Runtime 6.x, Dell Power Manager Service, Dell Display Manager 2.x and Microsoft Edge WebView2 Runtime as a selectable option
       1.1.1 Add uninstall check for Dell Optimizer by funtion Get-InstalledCheck
+      1.1.2 correct application search string for Dell Optimizer
 
 #>
 
@@ -66,7 +67,7 @@ function get-uninstallstring
       
       $AppSearch = switch ($App) 
          {
-            Optimizer   {"Dell*Optimizer*Core"}
+            Optimizer   {"Dell*Optimizer*"}
             WebView2    {"Microsoft*WebView2*"}
             Runtime6    {"Microsoft Windows Desktop Runtime - 6*(x64)*"}
             DDM         {"Dell*Display*Manager*"}
