@@ -25,9 +25,47 @@ limitations under the License.
 .DESCRIPTION
    This PowerShell will check if the requested Dell Software is installed and checking if the Version is correct. As far the Software found by Name and the version is matched the script will return a "Found it"
 
+   This script support the following applications
+        - Dell Core Services
+        - Dell SupportAssist
+        - Dell SupportAssist OS Recovery
+        - Dell Display and Peripheral Manager
+        - Dell Client Device Manager
+        - Dell Command | Update (Universal App and Classic)
+        - Dell Command | Configure
+        - Dell Command | Endpoint Configure for Microsoft Intune
+        - Dell Command | Monitor
+        - Dell Trusted Device
+        - Dell Optimizer
+        - Dell Device Management Agent
+        - Microsoft Windows Desktop Runtime (because some Dell tools require this as preparation)
+
+        .Parameter DellTool
+        Value is the Name of Dell Application to looking for like example Dell Trusted Device
+
+        .Parameter VersionIS
+        Value is the operator for the version compare supported are:
+            - Equal
+            - Not equal
+            - Less than
+            - Less than or equal
+            - Greater than
+            - Greater than or equal
+
+        .Parameter Version
+        Value is the version of Dell Application to looking for like 5.6.0 or 2.2.0.19 depends on the tool.
+
+
+        Changelog:
+            1.0.0   Initial Version
+
+        .Example
+        This will looking if Dell Command | Update is installed and the version must be equal 5.6.0
+        UniversialDellDetect.ps1 -DellTool 'Dell Command | Update' -VersionIS Equal -Version 5.6.0
+
 #>
 param(
-            [Parameter(mandatory=$true)][ValidateSet("Dell SupportAssist","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell | Command Update","Dell | Command Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted-Device","Dell Optimizer","Dell Device Management Agent",".Net RunTime8",".Net RunTime9")][String]$DellTool,
+            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Microsoft Windows Desktop Runtime")][String]$DellTool,
             [Parameter(mandatory=$true)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$VersionIS,
             [Parameter(mandatory=$true)][Version]$Version
     )
@@ -36,17 +74,19 @@ param(
 # Varible Section                            #####
 ##################################################
 $DellSoftwareList = @(
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell SupportAssist"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*"}                        
+                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"}
                         [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"}
-                        [PSCustomObject]@{NameParameter = "Dell | Command Configure"; SearchString = "Dell | Command Configure"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell Command | Endpoint Configure for Microsoft Intune"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell Command | Monitor"}
-                        [PSCustomObject]@{NameParameter = "Dell Trusted-Device"; SearchString = "Dell Trusted-Device"}
+                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"}
                         [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"}
                         [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"}
-                        [PSCustomObject]@{NameParameter = ".Net RunTime8"; SearchString = ".Net RunTime8"}
-                        [PSCustomObject]@{NameParameter = ".Net RunTime9"; SearchString = ".Net RunTime9"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"}
                     )
 
 ##################################################
@@ -82,32 +122,80 @@ function Test-SoftwareInstalled
         ## Equal
         If ($ISPattern -eq "Equal")
             {
-                $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.DisplayVersion -eq $VersionPattern ) }
+                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                    {
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -eq $VersionPattern ) }
+                    }
+                else
+                    {
+                        # get Version of MS Runtime only by WOW6232Node possible
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -eq $VersionPattern ) }
+                    }
             }
         ## Not equal
         elseIf ($ISPattern -eq "Not equal")
             {
-                $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.DisplayVersion -ne $VersionPattern ) }
+                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                    {
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -ne $VersionPattern ) }
+                    }
+                else
+                    {
+                        # get Version of MS Runtime only by WOW6232Node possible
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -ne $VersionPattern ) }
+                    }
             }
         ## Less than
         elseIf ($ISPattern -eq "Less than")
             {
-                $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.DisplayVersion -lt $VersionPattern ) }
+                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                    {
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -lt $VersionPattern ) }
+                    }
+                else
+                    {
+                        # get Version of MS Runtime only by WOW6232Node possible
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -lt $VersionPattern ) }
+                    }
             }
         ## Less than or equal
         elseIf ($ISPattern -eq "Less than or equal")
             {
-                $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.DisplayVersion -le $VersionPattern ) }
+                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                    {
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -le $VersionPattern ) }
+                    }
+                else
+                    {
+                        # get Version of MS Runtime only by WOW6232Node possible
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -le $VersionPattern ) }
+                    }
             }
         ## Greater than
         elseIf ($ISPattern -eq "Greater than")
             {
-                $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.DisplayVersion -gt $VersionPattern ) }
+                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                    {
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -gt $VersionPattern ) }
+                    }
+                else
+                    {
+                        # get Version of MS Runtime only by WOW6232Node possible
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -gt $VersionPattern ) }
+                    }
             }
         ## Greater than or equal
         elseIf ($ISPattern -eq "Greater than or equal")
             {
-                $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.DisplayVersion -ge $VersionPattern ) }
+                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                    {
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -ge $VersionPattern ) }
+                    }
+                else
+                    {
+                        # get Version of MS Runtime only by WOW6232Node possible
+                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -ge $VersionPattern ) }
+                    }
             }
         else
             {
@@ -131,5 +219,6 @@ Try
     }
 Catch
     {
-
+        Write-Output "Script failed: $($_.Exception.Message)"
+        Exit 1
     }
