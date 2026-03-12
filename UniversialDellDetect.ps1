@@ -96,6 +96,16 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"}
                     )
 
+# Operation translation
+$opMap = @{
+            "Equal"                 = "-eq"
+            "Not equal"             = "-ne"
+            "Less than"             = "-lt"
+            "Less than or equal"    = "-le"
+            "Greater than"          = "-gt"
+            "Greater than or equal" = "-ge"
+        }
+
 ##################################################
 # Function Section                           #####
 ##################################################
@@ -125,89 +135,17 @@ function Test-SoftwareInstalled
                     }
             }
 
-        # Search for DisplayName and DisplayVersion with different operators for DisplayVersion
-        ## Equal
-        If ($ISPattern -eq "Equal")
+        $operator = $opMap[$ISPattern]
+
+        if($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
             {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -eq $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -eq $VersionPattern ) }
-                    }
-            }
-        ## Not equal
-        elseIf ($ISPattern -eq "Not equal")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -ne $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -ne $VersionPattern ) }
-                    }
-            }
-        ## Less than
-        elseIf ($ISPattern -eq "Less than")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -lt $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -lt $VersionPattern ) }
-                    }
-            }
-        ## Less than or equal
-        elseIf ($ISPattern -eq "Less than or equal")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -le $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -le $VersionPattern ) }
-                    }
-            }
-        ## Greater than
-        elseIf ($ISPattern -eq "Greater than")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -gt $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -gt $VersionPattern ) }
-                    }
-            }
-        ## Greater than or equal
-        elseIf ($ISPattern -eq "Greater than or equal")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -ge $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -ge $VersionPattern ) }
-                    }
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
             }
         else
             {
-                exit 1
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and $_.PSParentPath -like "*\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
             }
+      
         return $match
     }
 
