@@ -64,7 +64,7 @@ limitations under the License.
 
 #>
 param(
-            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Command | Update"
+            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Optimizer"
     )
 
 ##################################################
@@ -74,17 +74,30 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*"; UninstallType = "msi"; UninstallString = "msiexec /x";SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; UninstallType = "String"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell Command | Endpoint Configure for Microsoft Intune"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell Command | Monitor"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"; UninstallType = "String"; UninstallString = "C:\Program Files (x86)\InstallShield Installation Information"; SilentSwitch = "-remove -runfromtemp"; Executable = "DellOptimizer.exe"}
                         [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell Peripheral Core"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                     )
+
+# Operation translation
+$opMap = @{
+            "Equal"                 = "-eq"
+            "Not equal"             = "-ne"
+            "Less than"             = "-lt"
+            "Less than or equal"    = "-le"
+            "Greater than"          = "-gt"
+            "Greater than or equal" = "-ge"
+        }
 
 ##################################################
 # Function Section                           #####
@@ -115,89 +128,17 @@ function Test-SoftwareInstalled
                     }
             }
 
-        # Search for DisplayName and DisplayVersion with different operators for DisplayVersion
-        ## Equal
-        If ($ISPattern -eq "Equal")
+        $operator = $opMap[$ISPattern]
+
+        if($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
             {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -eq $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -eq $VersionPattern ) }
-                    }
-            }
-        ## Not equal
-        elseIf ($ISPattern -eq "Not equal")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -ne $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -ne $VersionPattern ) }
-                    }
-            }
-        ## Less than
-        elseIf ($ISPattern -eq "Less than")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -lt $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -lt $VersionPattern ) }
-                    }
-            }
-        ## Less than or equal
-        elseIf ($ISPattern -eq "Less than or equal")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -le $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -le $VersionPattern ) }
-                    }
-            }
-        ## Greater than
-        elseIf ($ISPattern -eq "Greater than")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -gt $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -gt $VersionPattern ) }
-                    }
-            }
-        ## Greater than or equal
-        elseIf ($ISPattern -eq "Greater than or equal")
-            {
-                If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-                    {
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and [version]$_.DisplayVersion -ge $VersionPattern ) }
-                    }
-                else
-                    {
-                        # get Version of MS Runtime only by WOW6232Node possible
-                        $match = $items | Where-Object { $_.DisplayName -and ($_.DisplayName -like "$NamePattern" -and $_.PSParentPath -like "*\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and [version]$_.DisplayVersion -ge $VersionPattern ) }
-                    }
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
             }
         else
             {
-                exit 1
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and $_.PSParentPath -like "*\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
             }
+      
         return $match
     }
 
@@ -216,6 +157,26 @@ function Uninstall-DellTool
                 try
                     {
                         Start-Process "msiexec.exe" -ArgumentList "/x $AppID /qn /norestart" -Wait -NoNewWindow
+                        Return $true
+                    }
+                catch
+                    {
+                        Write-Verbose "Failed to uninstall $NamePattern" -Verbose
+                        Return $false
+                    }
+            }
+        elseif ($UninstallType -eq "String") 
+            {
+                try
+                    {                    
+                        # get Uninstall String by registrykey
+                        
+
+                        
+                        
+                        $ExecutableString = Join-path -Path "C:\Program Files (x86)\InstallShield Installation Information" $AppID "DellOptimizer.exe"
+                        
+                        Start-Process -WorkingDirectory "msiexec.exe" -ArgumentList "/x $AppID /qn /norestart" -Wait -NoNewWindow
                         Return $true
                     }
                 catch
@@ -250,18 +211,24 @@ try
     }
 catch
     {
-        Write-Verbose "Event source Dell Software Uninstall fail to create for log Dell." -Verbose
-        return $false
+        Write-Verbose "Event source Dell Software Uninstall exist." -Verbose
     }
 
 #### Check if installed and if yes uninstall application
 Try
     {
         # select the searchstring for function
-        $SoftwareName = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool} | select-object -ExpandProperty Searchstring
+        $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
 
         #### get Software details
-        $SoftwareDetails =Test-SoftwareInstalled -NamePattern $SoftwareName -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+        $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+
+        #check for multidetection
+        if ($SoftwareDetails.Count -gt 1) 
+            {
+                #if we have more than one looking for app with PSChildName and take the first
+                $SoftwareDetails = $SoftwareDetails | Where-Object {$_.ModifyPath -Like "MSI*"}
+            }
 
         If($null -ne $SoftwareDetails)
             {
@@ -274,9 +241,36 @@ Try
 
                 Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
 
-
                 # call uninstall function
-                Uninstall-Software -NamePattern $SoftwareName -UninstallType $SoftwareDetails.UninstallType -AppID $SoftwareDetails.AppID
+                $UninstallResult = Uninstall-DellTool -NamePattern $Software.NameParameter -UninstallType $Software.UninstallType -AppID $SoftwareDetails.PSChildName
+
+                # Logging uninstall result
+                if($UninstallResult -eq $true)
+                    {
+                        Write-Verbose "$DellTool is uninstalled successfully" -Verbose
+
+                        $UninstallData = [PSCustomObject]@{
+                                                            Software = $DellTool
+                                                            Version = $($SoftwareDetails.DisplayVersion)
+                                                            Uninstall = $true
+                                                        } | ConvertTo-Json
+
+                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                        Exit 0
+                    }
+                else
+                    {
+                        Write-Verbose "$DellTool uninstall failed" -Verbose
+
+                        $UninstallData = [PSCustomObject]@{
+                                                            Software = $DellTool
+                                                            Version = $($SoftwareDetails.DisplayVersion)
+                                                            Uninstall = $false
+                                                        } | ConvertTo-Json
+
+                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                        Exit 0
+                    }
             }
         else
             {
