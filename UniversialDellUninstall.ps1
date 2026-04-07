@@ -64,29 +64,29 @@ limitations under the License.
 
 #>
 param(
-            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Optimizer"
+            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Display and Peripheral Manager"
     )
 
 ##################################################
 # Varible Section                            #####
 ##################################################
 $DellSoftwareList = @(
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*"; UninstallType = "msi"; UninstallString = "msiexec /x";SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; UninstallType = "String"; UninstallString = "msiexec /x"; SilentSwitch = "/Silent"}
-                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell Command | Endpoint Configure for Microsoft Intune"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell Command | Monitor"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"; UninstallType = "String"; UninstallString = "C:\Program Files (x86)\InstallShield Installation Information"; SilentSwitch = "-remove -runfromtemp"; Executable = "DellOptimizer.exe"}
-                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell Peripheral Core"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*";SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; SilentSwitch = "/uninst /silent"}
+                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell Command | Endpoint Configure for Microsoft Intune"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell Command | Monitor"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"; SilentSwitch = "/Silent"}
+                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell Peripheral Core"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; SilentSwitch = "/qn"}
                     )
 
 # Operation translation
@@ -151,9 +151,9 @@ function Uninstall-DellTool
                 [Parameter(Mandatory)][string]$UninstallString
             )
 
-        if ($UninstallString -contains "msiexec")
+        # Uninstall by MSI
+        if ($UninstallString -like "*msiexec*")
             {
-                # Uninstall by MSI
                 try
                     {
                         Start-Process "msiexec.exe" -ArgumentList "/x $AppID /qn /norestart" -Wait -NoNewWindow
@@ -165,18 +165,21 @@ function Uninstall-DellTool
                         Return $false
                     }
             }
-        else
+        # Uninstall by executable
+        elseif ($null -ne $UninstallString)
             {
                 try
                     {
                         # prepare uninstall string
                         $UninstallString = $UninstallString.Trim('"')
                         $StartUninstall = $UninstallString.Split('"')[0]
-                        $AgrumentUninstall = $UninstallString.Split(".exe")[1] + ".exe"
+                        $AgrumentUninstall = $UninstallString.Split('" ')[1]
 
-                        $ArgumentString = "$AgrumentUninstall " + "/Silent"
+                        # select the searchstring for function
+                        $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
+                        $ArgumentString = $Software.SilentSwitch
 
-                        Start-Process  $StartUninstall -ArgumentList "$AgrumentUninstall " -Wait -NoNewWindow
+                        Start-Process  $StartUninstall -ArgumentList $ArgumentString -Wait -NoNewWindow
                         Return $true
                     }
                 catch
@@ -185,7 +188,11 @@ function Uninstall-DellTool
                         Return $false
                     }
             }
-
+        else
+            {
+                Write-Verbose "No uninstall string found for $NamePattern" -Verbose
+                Return $false
+            }
     }
 ##################################################
 # Program Section                            #####
