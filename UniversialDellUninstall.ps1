@@ -74,7 +74,7 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*"; UninstallType = "msi"; UninstallString = "msiexec /x";SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; UninstallType = "String"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; UninstallType = "String"; UninstallString = "msiexec /x"; SilentSwitch = "/Silent"}
                         [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"; UninstallType = "msi"; UninstallString = "msiexec /x"; SilentSwitch = "/qn"}
@@ -138,7 +138,7 @@ function Test-SoftwareInstalled
             {
                 $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and $_.PSParentPath -like "*\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
             }
-      
+
         return $match
     }
 
@@ -147,11 +147,11 @@ function Uninstall-DellTool
         param
             (
                 [Parameter(Mandatory)][string]$NamePattern,
-                [Parameter(Mandatory)][string]$UninstallType,
-                [Parameter(Mandatory)][string]$AppID
+                [Parameter(Mandatory)][string]$AppID,
+                [Parameter(Mandatory)][string]$UninstallString
             )
 
-        If ($UninstallType -eq "MSI")
+        if ($UninstallString -contains "msiexec")
             {
                 # Uninstall by MSI
                 try
@@ -165,31 +165,18 @@ function Uninstall-DellTool
                         Return $false
                     }
             }
-        elseif ($UninstallType -eq "String") 
-            {
-                try
-                    {                    
-                        # get Uninstall String by registrykey
-                        
-
-                        
-                        
-                        $ExecutableString = Join-path -Path "C:\Program Files (x86)\InstallShield Installation Information" $AppID "DellOptimizer.exe"
-                        
-                        Start-Process -WorkingDirectory "msiexec.exe" -ArgumentList "/x $AppID /qn /norestart" -Wait -NoNewWindow
-                        Return $true
-                    }
-                catch
-                    {
-                        Write-Verbose "Failed to uninstall $NamePattern" -Verbose
-                        Return $false
-                    }
-            }
         else
             {
-                #Uninstall by Full uninstall string
                 try
                     {
+                        # prepare uninstall string
+                        $UninstallString = $UninstallString.Trim('"')
+                        $StartUninstall = $UninstallString.Split('"')[0]
+                        $AgrumentUninstall = $UninstallString.Split(".exe")[1] + ".exe"
+
+                        $ArgumentString = "$AgrumentUninstall " + "/Silent"
+
+                        Start-Process  $StartUninstall -ArgumentList "$AgrumentUninstall " -Wait -NoNewWindow
                         Return $true
                     }
                 catch
@@ -198,6 +185,7 @@ function Uninstall-DellTool
                         Return $false
                     }
             }
+
     }
 ##################################################
 # Program Section                            #####
@@ -223,13 +211,6 @@ Try
         #### get Software details
         $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
 
-        #check for multidetection
-        if ($SoftwareDetails.Count -gt 1) 
-            {
-                #if we have more than one looking for app with PSChildName and take the first
-                $SoftwareDetails = $SoftwareDetails | Where-Object {$_.ModifyPath -Like "MSI*"}
-            }
-
         If($null -ne $SoftwareDetails)
             {
                 Write-Verbose "$($SoftwareDetails.DisplayName) is installed with version $($SoftwareDetails.DisplayVersion)" -Verbose
@@ -242,7 +223,7 @@ Try
                 Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
 
                 # call uninstall function
-                $UninstallResult = Uninstall-DellTool -NamePattern $Software.NameParameter -UninstallType $Software.UninstallType -AppID $SoftwareDetails.PSChildName
+                $UninstallResult = Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareDetails.PSChildName -UninstallString $SoftwareDetails.UninstallString
 
                 # Logging uninstall result
                 if($UninstallResult -eq $true)
