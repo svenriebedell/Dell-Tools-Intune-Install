@@ -64,7 +64,7 @@ limitations under the License.
 
 #>
 param(
-            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Display and Peripheral Manager"
+            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Display and Peripheral Manager"
     )
 
 ##################################################
@@ -72,6 +72,7 @@ param(
 ##################################################
 $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*";SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell SupportAssist OS Recovery Plugin*";SilentSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; SilentSwitch = "/uninst /silent"}
@@ -83,9 +84,9 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"; SilentSwitch = "/Silent"}
                         [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; SilentSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell Peripheral Core"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery*"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; SilentSwitch = "/qn"}
                     )
 
@@ -105,9 +106,9 @@ $opMap = @{
 function Test-SoftwareInstalled
     {
         param(
-                    [Parameter(Mandatory)][string]$NamePattern,
-                    [Parameter(Mandatory)][string]$ISPattern,
-                    [Parameter(Mandatory)][Version]$VersionPattern
+                    [Parameter(Mandatory)][string]$NamePattern="Dell SupportAssist OS Recovery Plugin for Dell Update",
+                    [Parameter(Mandatory)][string]$ISPattern="Greater than",
+                    [Parameter(Mandatory)][Version]$VersionPattern="0.0.0.0"
             )
 
         # Uninstall-Path (64-bit & 32-bit)
@@ -120,7 +121,17 @@ function Test-SoftwareInstalled
             {
                 try
                     {
-                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+                        If ($NamePattern -ne "Dell Optimizer")
+                            {
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.InstallLocation -ne $null}
+                            }
+                        else
+                            {
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.InstallLocation -eq $null}
+                            }
+                        
+
+
                     }
                 catch
                     {
@@ -170,16 +181,14 @@ function Uninstall-DellTool
             {
                 try
                     {
-                        # prepare uninstall string
-                        $UninstallString = $UninstallString.Trim('"')
-                        $StartUninstall = $UninstallString.Split('"')[0]
-                        $AgrumentUninstall = $UninstallString.Split('" ')[1]
-
                         # select the searchstring for function
-                        $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
-                        $ArgumentString = $Software.SilentSwitch
+                        $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $NamePattern}
+                        $UninstallParameter = $Software.SilentSwitch
 
-                        Start-Process  $StartUninstall -ArgumentList $ArgumentString -Wait -NoNewWindow
+                        # prepare uninstall string
+                        $ArgumentString = $UninstallString + " " + $UninstallParameter
+
+                        Start-Process cmd.exe -ArgumentList "/c",$ArgumentString -Wait -NoNewWindow
                         Return $true
                     }
                 catch
