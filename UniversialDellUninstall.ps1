@@ -72,7 +72,7 @@ param(
 ##################################################
 $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*";SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell SupportAssist OS Recovery Plugin*";SilentSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell SupportAssist OS Recovery Plugin for Dell Update";SilentSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; SilentSwitch = "/uninst /silent"}
@@ -123,11 +123,11 @@ function Test-SoftwareInstalled
                     {
                         If ($NamePattern -ne "Dell Optimizer")
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.InstallLocation -ne $null}
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
                             }
                         else
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.InstallLocation -eq $null}
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue #| Where-Object {$_.InstallLocation -eq $null}
                             }
                         
 
