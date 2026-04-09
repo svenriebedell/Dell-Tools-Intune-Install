@@ -106,9 +106,9 @@ $opMap = @{
 function Test-SoftwareInstalled
     {
         param(
-                    [Parameter(Mandatory)][string]$NamePattern="Dell SupportAssist OS Recovery Plugin for Dell Update",
-                    [Parameter(Mandatory)][string]$ISPattern="Greater than",
-                    [Parameter(Mandatory)][Version]$VersionPattern="0.0.0.0"
+                    [Parameter(Mandatory)][string]$NamePattern,
+                    [Parameter(Mandatory)][string]$ISPattern,
+                    [Parameter(Mandatory)][Version]$VersionPattern
             )
 
         # Uninstall-Path (64-bit & 32-bit)
@@ -129,9 +129,6 @@ function Test-SoftwareInstalled
                             {
                                 Get-ItemProperty -Path $path -ErrorAction SilentlyContinue #| Where-Object {$_.InstallLocation -eq $null}
                             }
-                        
-
-
                     }
                 catch
                     {
