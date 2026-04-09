@@ -121,6 +121,13 @@ function Test-SoftwareInstalled
                     "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
                 )
 
+        
+        # cover name conversion of Dell SupportAssist for Business PCs to Dell SupportAssist.
+        if($NamePattern -eq "Dell Supportassist" -and [Version]$VersionPattern -lt "5.0")
+            {
+                $NamePattern = "Dell Supportassist*Business*PCs"
+            }
+
         $items = foreach ($path in $paths)
             {
                 try
