@@ -2,7 +2,7 @@
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
 _version_ = 1.0
-_Dev_Status_ = Test
+_Dev_Status_ = Test_ready
 Copyright ©2026 Dell Inc. or its subsidiaries. All Rights Reserved.
 
 No implied support and test in test environment/device before using in any production environment.
@@ -29,6 +29,7 @@ limitations under the License.
         - Dell Core Services
         - Dell SupportAssist (only Version 5.x and higher)
         - Dell SupportAssist OS Recovery
+        - Dell SupportAssist OS Recovery Plugin for Dell Update
         - Dell Display and Peripheral Manager
         - Dell Client Device Manager
         - Dell Command | Update (Universal App and Classic)
@@ -38,6 +39,9 @@ limitations under the License.
         - Dell Trusted Device
         - Dell Optimizer
         - Dell Device Management Agent
+        - Dell Pair
+        - Dell Peripheral Core
+        - Dell Digital Delivery
         - Microsoft Windows Desktop Runtime (because some Dell tools require this as preparation)
 
         .Parameter DellTool
@@ -67,7 +71,7 @@ limitations under the License.
 
 
 param(
-            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist", "Dell SupportAssist OS Recovery", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Core Services", "Dell Display and Peripheral Manager", "Dell Client Device Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime")][String]$DellTool,
+            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist", "Dell SupportAssist OS Recovery", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display and Peripheral Manager", "Dell Client Device Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Peripheral Core", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime")][String]$DellTool,
             [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$VersionIS,
             [Parameter(mandatory=$false)][Version]$Version
     )
@@ -113,21 +117,24 @@ function Test-SoftwareInstalled
 
         # Uninstall-Path (64-bit & 32-bit)
         $paths = @(
-                    'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
-                    'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
-        )
+                    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+                    "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+                )
 
         $items = foreach ($path in $paths)
             {
                 try
                     {
-                        If ($NamePattern -like "Dell Optimizer*" -or $NamePattern -like "Microsoft Windows Desktop Runtime*(x64)*")
+                        If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
                             }
                         else
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue #| Where-Object {$_.InstallLocation -eq $null}
+                                If ($path -like $paths[1])
+                                    {                               
+                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                    }
                             }
                     }
                 catch
@@ -136,30 +143,30 @@ function Test-SoftwareInstalled
                     }
             }
 
-        #Checking be different operators
+        #Checking be different operators if displayversion match
         if($ISPattern -eq "Equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -eq [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -eq [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Not equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ne [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -ne [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Less than")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -lt [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -lt [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Less than or equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -le [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -le [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Greater than")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -gt [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -gt [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Greater than or equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ge [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -ge [version]$VersionPattern}
             }
 
         return $match
