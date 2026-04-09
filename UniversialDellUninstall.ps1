@@ -71,8 +71,8 @@ param(
 # Varible Section                            #####
 ##################################################
 $DellSoftwareList = @(
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*";SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell SupportAssist OS Recovery Plugin for Dell Update";SilentSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery";SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell SupportAssist OS Recovery Plugin*";SilentSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; SilentSwitch = "/uninst /silent"}
@@ -90,25 +90,15 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; SilentSwitch = "/qn"}
                     )
 
-# Operation translation
-$opMap = @{
-            "Equal"                 = "-eq"
-            "Not equal"             = "-ne"
-            "Less than"             = "-lt"
-            "Less than or equal"    = "-le"
-            "Greater than"          = "-gt"
-            "Greater than or equal" = "-ge"
-        }
-
 ##################################################
 # Function Section                           #####
 ##################################################
 function Test-SoftwareInstalled
     {
         param(
-                    [Parameter(Mandatory)][string]$NamePattern,
-                    [Parameter(Mandatory)][string]$ISPattern,
-                    [Parameter(Mandatory)][Version]$VersionPattern
+                    [Parameter(mandatory=$false)][string]$NamePattern = "Dell Supportassist*",
+                    [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$ISPattern = 'Greater than or equal',
+                    [Parameter(mandatory=$false)][Version]$VersionPattern = "4.5.0.0"
             )
 
         # Uninstall-Path (64-bit & 32-bit)
@@ -121,7 +111,7 @@ function Test-SoftwareInstalled
             {
                 try
                     {
-                        If ($NamePattern -ne "Dell Optimizer")
+                        If ($NamePattern -like "Dell Optimizer*" -or $NamePattern -like "Microsoft Windows Desktop Runtime*(x64)*")
                             {
                                 Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
                             }
@@ -135,8 +125,32 @@ function Test-SoftwareInstalled
                         Write-Output "Path no found" | Out-Null
                     }
             }
-
-        $operator = $opMap[$ISPattern]
+        
+        #Checking be different operators
+        if($ISPattern -eq "Equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -eq [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Not equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ne [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Less than")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -lt [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Less than or equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -le [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Greater than")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -gt [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Greater than or equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ge [version]$VersionPattern}
+            }
 
         if($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
             {

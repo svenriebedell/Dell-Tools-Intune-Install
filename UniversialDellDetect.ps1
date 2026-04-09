@@ -27,7 +27,7 @@ limitations under the License.
 
    This script support the following applications
         - Dell Core Services
-        - Dell SupportAssist
+        - Dell SupportAssist (only Version 5.x and higher)
         - Dell SupportAssist OS Recovery
         - Dell Display and Peripheral Manager
         - Dell Client Device Manager
@@ -67,7 +67,7 @@ limitations under the License.
 
 
 param(
-            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Microsoft Windows Desktop Runtime")][String]$DellTool,
+            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist", "Dell SupportAssist OS Recovery", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Core Services", "Dell Display and Peripheral Manager", "Dell Client Device Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime")][String]$DellTool,
             [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$VersionIS,
             [Parameter(mandatory=$false)][Version]$Version
     )
@@ -81,30 +81,24 @@ if (-not $Version)   { $Version   = [Version]"5.4.0" }
 # Varible Section                            #####
 ##################################################
 $DellSoftwareList = @(
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery*"}
-                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"}
-                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"}
-                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell Command | Endpoint Configure for Microsoft Intune"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell Command | Monitor"}
-                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"}
-                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"}
-                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery"; SearchString = "Dell SupportAssist OS Recovery";SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell SupportAssist OS Recovery Plugin*";SilentSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell Core Services"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell Supportassist"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell Display and Peripheral Manager"; SilentSwitch = "/uninst /silent"}
+                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell Client Device Manager"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell Command | Update*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell Command | Configure"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell Command | Endpoint Configure for Microsoft Intune"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell Command | Monitor"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell Trusted Device"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell Optimizer"; SilentSwitch = "/Silent"}
+                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell Device Management Agent"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; SilentSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell Peripheral Core"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; SilentSwitch = "/qn"}
                     )
-
-# Operation translation
-$opMap = @{
-            "Equal"                 = "-eq"
-            "Not equal"             = "-ne"
-            "Less than"             = "-lt"
-            "Less than or equal"    = "-le"
-            "Greater than"          = "-gt"
-            "Greater than or equal" = "-ge"
-        }
 
 ##################################################
 # Function Section                           #####
@@ -112,9 +106,9 @@ $opMap = @{
 function Test-SoftwareInstalled
     {
         param(
-                    [Parameter(Mandatory)][string]$NamePattern,
-                    [Parameter(Mandatory)][string]$ISPattern,
-                    [Parameter(Mandatory)][Version]$VersionPattern
+                    [Parameter(mandatory=$false)][string]$NamePattern,
+                    [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$ISPattern,
+                    [Parameter(mandatory=$false)][Version]$VersionPattern
             )
 
         # Uninstall-Path (64-bit & 32-bit)
@@ -127,7 +121,14 @@ function Test-SoftwareInstalled
             {
                 try
                     {
-                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+                        If ($NamePattern -like "Dell Optimizer*" -or $NamePattern -like "Microsoft Windows Desktop Runtime*(x64)*")
+                            {
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+                            }
+                        else
+                            {
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue #| Where-Object {$_.InstallLocation -eq $null}
+                            }
                     }
                 catch
                     {
@@ -135,17 +136,32 @@ function Test-SoftwareInstalled
                     }
             }
 
-        $operator = $opMap[$ISPattern]
+        #Checking be different operators
+        if($ISPattern -eq "Equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -eq [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Not equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ne [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Less than")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -lt [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Less than or equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -le [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Greater than")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -gt [version]$VersionPattern}
+            }
+        elseif($ISPattern -eq "Greater than or equal")
+            {
+                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ge [version]$VersionPattern}
+            }
 
-        if($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-            {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
-            }
-        else
-            {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and $_.PSParentPath -like "*\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
-            }
-      
         return $match
     }
 
