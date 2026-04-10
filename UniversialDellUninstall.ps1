@@ -96,28 +96,37 @@ $DellSoftwareList = @(
 function Test-SoftwareInstalled
     {
         param(
-                    [Parameter(mandatory=$false)][string]$NamePattern = "Dell Supportassist*",
-                    [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$ISPattern = 'Greater than or equal',
-                    [Parameter(mandatory=$false)][Version]$VersionPattern = "4.5.0.0"
+                    [Parameter(mandatory=$false)][string]$NamePattern,
+                    [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$ISPattern,
+                    [Parameter(mandatory=$false)][Version]$VersionPattern
             )
 
         # Uninstall-Path (64-bit & 32-bit)
         $paths = @(
-                    'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
-                    'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
-        )
+                    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+                    "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+                )
+
+        # cover name conversion of Dell SupportAssist for Business PCs to Dell SupportAssist.
+        if($NamePattern -eq "Dell Supportassist" -and [Version]$VersionPattern -lt "5.0")
+            {
+                $NamePattern = "Dell Supportassist*Business*PCs"
+            }
 
         $items = foreach ($path in $paths)
             {
                 try
                     {
-                        If ($NamePattern -like "Dell Optimizer*" -or $NamePattern -like "Microsoft Windows Desktop Runtime*(x64)*")
+                        If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
                             }
                         else
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue #| Where-Object {$_.InstallLocation -eq $null}
+                                If ($path -like $paths[1])
+                                    {
+                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                    }
                             }
                     }
                 catch
@@ -125,40 +134,31 @@ function Test-SoftwareInstalled
                         Write-Output "Path no found" | Out-Null
                     }
             }
-        
-        #Checking be different operators
+
+        #Checking be different operators if displayversion match
         if($ISPattern -eq "Equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -eq [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -eq [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Not equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ne [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -ne [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Less than")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -lt [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -lt [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Less than or equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -le [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -le [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Greater than")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -gt [version]$VersionPattern}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -gt [version]$VersionPattern}
             }
         elseif($ISPattern -eq "Greater than or equal")
             {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and [version]$_.DisplayVersion -ge [version]$VersionPattern}
-            }
-
-        if($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
-            {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
-            }
-        else
-            {
-                $match = $items | Where-Object {$_.DisplayName -like $NamePattern -and $_.PSParentPath -like "*\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" -and (Invoke-Expression "[version]'$($_.DisplayVersion)' $operator [version]'$VersionPattern'")}
+                $match = $items | Where-Object {[version]$_.DisplayVersion -ge [version]$VersionPattern}
             }
 
         return $match
@@ -249,7 +249,7 @@ Try
 
                 Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
 
-                # call uninstall function
+                # call uninstall function with cover multiple uninstall strings
                 $UninstallResult = Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareDetails.PSChildName -UninstallString $SoftwareDetails.UninstallString
 
                 # Logging uninstall result
