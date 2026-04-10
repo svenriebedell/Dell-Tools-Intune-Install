@@ -37,7 +37,7 @@ limitations under the License.
         - Dell Trusted Device
         - Dell Optimizer
         - Dell Device Management Agent
-        - Microsoft Windows Desktop Runtime (because some Dell tools require this as preparation)
+        - Microsoft Windows Desktop Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
 
         .Parameter DellTool
         Value is the Name of Dell Application to looking for like example Dell Trusted Device
@@ -64,7 +64,7 @@ limitations under the License.
 
 #>
 param(
-            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime")][String]$DellTool="Dell Display and Peripheral Manager"
+            [Parameter(mandatory=$true)][ValidateSet("AllDell","Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10")][String]$DellTool="Dell Display and Peripheral Manager"
     )
 
 ##################################################
@@ -87,7 +87,10 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell Pair"; SilentSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell Peripheral Core"; SilentSwitch = "/qn"}
                         [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell Digital Delivery*"; SilentSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime"; SearchString = "Microsoft Windows Desktop Runtime*(x64)*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 6"; SearchString = "Microsoft Windows Desktop Runtime*6*(x64)*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 8"; SearchString = "Microsoft Windows Desktop Runtime*8*(x64)*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 9"; SearchString = "Microsoft Windows Desktop Runtime*9*(x64)*"; SilentSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 10"; SearchString = "Microsoft Windows Desktop Runtime*10*(x64)*"; SilentSwitch = "/qn"}
                     )
 
 ##################################################
@@ -107,19 +110,20 @@ function Test-SoftwareInstalled
                     "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
                 )
 
-        # cover name conversion of Dell SupportAssist for Business PCs to Dell SupportAssist.
-        if($NamePattern -eq "Dell Supportassist" -and [Version]$VersionPattern -lt "5.0")
-            {
-                $NamePattern = "Dell Supportassist*Business*PCs"
-            }
-
         $items = foreach ($path in $paths)
             {
                 try
                     {
                         If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
                             {
-                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                if ($NamePattern -ne "Dell SupportAssist")
+                                    {
+                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                    }
+                                else
+                                {
+                                    Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern -or $_.DisplayName -like "Dell SupportAssist*Business*"}
+                                }
                             }
                         else
                             {
@@ -237,6 +241,12 @@ Try
 
         #### get Software details
         $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+
+        # cleanup App list for non msi apps like Dell Optimizer
+        if ($Software.NameParameter -eq "Dell Optimizer" -or $Software.NameParameter -eq "Dell SupportAssist OS Recovery Plugin for Dell Update") 
+            {
+                $SoftwareDetails = $SoftwareDetails | Where-Object {$Null -eq $_.InstallLocation}
+            }
 
         If($null -ne $SoftwareDetails)
             {
