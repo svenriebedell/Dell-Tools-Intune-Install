@@ -42,18 +42,6 @@ limitations under the License.
         .Parameter DellTool
         Value is the Name of Dell Application to looking for like example Dell Trusted Device
 
-        .Parameter VersionIS
-        Value is the operator for the version compare supported are:
-            - Equal
-            - Not equal
-            - Less than
-            - Less than or equal
-            - Greater than
-            - Greater than or equal
-
-        .Parameter Version
-        Value is the version of Dell Application to looking for like 5.6.0 or 2.2.0.19 depends on the tool.
-
 
         Changelog:
             1.0.0   Initial Version
@@ -61,6 +49,14 @@ limitations under the License.
         .Example
         This will looking if Dell Command | Update is installed and uninstall this software
         UniversialDellUninstall.ps1 -DellTool 'Dell Command | Update'
+
+        .Example
+        This will looking for all listed Dell tools and uninstall them
+        UniversialDellUninstall.ps1 -DellTool 'AllDell'
+
+        .Example
+        This will looking for Microsoft Desktop Runtime 8 and uninstall this software
+        UniversialDellUninstall.ps1 -DellTool 'Microsoft Windows Desktop Runtime 8'
 
 #>
 param(
@@ -252,11 +248,11 @@ Try
                 $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
 
                 # cleanup App list for non msi uninstall apps like Dell Optimizer
-                if ($Software.NameParameter -eq "Dell Optimizer" -or $Software.NameParameter -eq "Dell SupportAssist OS Recovery Plugin for Dell Update" -or $Software.NameParameter -like "Microsoft Windows Desktop Runtime*") 
+                if ($Software.NameParameter -eq "Dell Optimizer" -or $Software.NameParameter -eq "Dell SupportAssist OS Recovery Plugin for Dell Update" -or $Software.NameParameter -like "Microsoft Windows Desktop Runtime*")
                     {
                         $SoftwareDetails = $SoftwareDetails | Where-Object {$Null -eq $_.InstallLocation}
                     }
-                
+
                 if($null -ne $SoftwareDetails)
                     {
                         Write-Verbose "$($SoftwareDetails.DisplayName) is installed with version $($SoftwareDetails.DisplayVersion)" -Verbose
@@ -310,7 +306,7 @@ Try
                                         # call uninstall function with cover multiple uninstall strings
                                         Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareList.PSChildName -UninstallString $SoftwareList.UninstallString | Out-Null
                                     }
-                                
+
                                 # Check if Application uninstall was successful
                                 $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
 
@@ -364,16 +360,16 @@ Try
                 $DellSoftwareList = $DellSoftwareList | Where-Object {$_.Sequence -ne 9}  | Sort-Object -Property Sequence
 
                 Foreach ($Software in $DellSoftwareList)
-                    {                       
+                    {
                         #### get Software details
                         $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
 
                         # cleanup App list for non msi uninstall apps like Dell Optimizer
-                        if ($Software.NameParameter -eq "Dell Optimizer" -or $Software.NameParameter -eq "Dell SupportAssist OS Recovery Plugin for Dell Update") 
+                        if ($Software.NameParameter -eq "Dell Optimizer" -or $Software.NameParameter -eq "Dell SupportAssist OS Recovery Plugin for Dell Update")
                             {
                                 $SoftwareDetails = $SoftwareDetails | Where-Object {$Null -eq $_.InstallLocation}
                             }
-                                
+
                         if($null -ne $SoftwareDetails)
                             {
                                 Write-Verbose "$($SoftwareDetails.DisplayName) is installed with version $($SoftwareDetails.DisplayVersion)" -Verbose
@@ -393,28 +389,28 @@ Try
 
                                 If($null -eq $UninstallResult)
                                     {
-                                                                Write-Verbose "$($Software.NameParameter) is uninstalled successfully" -Verbose
+                                        Write-Verbose "$($Software.NameParameter) is uninstalled successfully" -Verbose
 
-                                                                $UninstallData = [PSCustomObject]@{
-                                                                                                    Software = $($Software.NameParameter)
-                                                                                                    Version = $($SoftwareDetails.DisplayVersion)
-                                                                                                    Uninstall = $true
-                                                                                                } | ConvertTo-Json
+                                        $UninstallData = [PSCustomObject]@{
+                                                                                Software = $($Software.NameParameter)
+                                                                                Version = $($SoftwareDetails.DisplayVersion)
+                                                                                Uninstall = $true
+                                                                        } | ConvertTo-Json
 
-                                                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
                                     }
                                 else
                                     {
-                                                                Write-Verbose "$($Software.NameParameter) uninstall failed" -Verbose
+                                        Write-Verbose "$($Software.NameParameter) uninstall failed" -Verbose
 
-                                                                $UninstallData = [PSCustomObject]@{
-                                                                                                    Software = $($Software.NameParameter)
-                                                                                                    Version = $($SoftwareDetails.DisplayVersion)
-                                                                                                    Uninstall = $false
-                                                                                                } | ConvertTo-Json
+                                        $UninstallData = [PSCustomObject]@{
+                                                                                Software = $($Software.NameParameter)
+                                                                                Version = $($SoftwareDetails.DisplayVersion)
+                                                                                Uninstall = $false
+                                                                            } | ConvertTo-Json
 
-                                                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-                    
+                                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+
                                     }
                             }
                         else
