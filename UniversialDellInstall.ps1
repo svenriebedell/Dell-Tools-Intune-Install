@@ -54,7 +54,7 @@ Change Log
 
 param(
             [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10")][String]$DellTool,
-            [Parameter(mandatory=$true)][ValidateSet($true,$false)][bool]$UninstallOldVersion
+            [Parameter(mandatory=$true)][ValidateSet("true","false")][string]$UninstallOldVersion
     )
 
 ##############################################
@@ -174,7 +174,7 @@ function Get-FileVersion
                     {
                         try
                             {
-                                [Version]$fileVersion = (Get-Item -Path $FullPath).VersionInfo.FileVersion
+                                [Version]$fileVersion = (Get-Item -Path $FullPath).VersionInfo.ProductVersion
                                 return $fileVersion
                             }
                         catch
@@ -194,13 +194,28 @@ function Install-DellTool
                 [Parameter(Mandatory=$true)][ValidateSet("MSI", "EXE")][string]$FileType
         )
 
+        $SupportAssist = @(
+                            [PSCustomObject]@{Type = "MSI"; InstallSwitch = 'ADDLOCAL="BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS" TRANSFORMS=".\SupportAssistConfiguration.mst" DEPLOYMENTKEY="Dell2026#" SOURCE=TechDirect /norestart /qn'}
+                            [PSCustomObject]@{Type = "EXE"; InstallSwitch = 'ADDLOCAL="BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS" SOURCE=TechDirect /norestart /qn'}
+                        )
+
         If($FileType -eq "MSI")
             {
                 # Install MSI
                 try
                     {
-                        Start-Process "msiexec.exe" -ArgumentList "/i `"$FullPathFile`" $InstallString /qn /norestart" -Wait -NoNewWindow
-                        Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                        If ($FullPathFile -notlike "SupportAssistInstaller*")
+                            {
+                                Start-Process "msiexec.exe" -ArgumentList "/i `"$FullPathFile`" $InstallString /qn /norestart" -Wait -NoNewWindow
+                                Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                            }
+                        else
+                            {
+                                $ArgumentList = $SupportAssist | Where-Object {$_.type -eq "MSI"} | Select-Object -ExpandProperty InstallSwitch
+
+                                Start-Process "msiexec.exe" -ArgumentList "/i $ArgumentList" -Wait -NoNewWindow
+                                Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                            }
                     }
                 catch
                     {
@@ -226,33 +241,28 @@ function Install-DellTool
 #### variable section                     ####
 ##############################################
 $DellSoftwareList = @(
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell*SupportAssist*OS*Recovery*Plugin*";SilentSwitch = "/S"; Sequence = 2; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell*Core*Services"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell*Display*Peripheral*Manager"; SilentSwitch = "/uninst /silent"; Sequence = 1; Type = "EXE"; InstallSwitch = "/uninst /silent"}
-                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell*Client*Device*Manager"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/qn"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell*Command*Update"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell*Command*Configure"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell*Command*Endpoint*Configure*Intune"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell*Command*Monitor"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell*Trusted*Device"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell*Optimizer"; SilentSwitch = "/Silent"; Sequence = 1; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SilentSwitch = "/qn"; Sequence = 1; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell*Pair"; SilentSwitch = "/S"; Sequence = 2; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell*Peripheral*Core"; SilentSwitch = "/qn"; Sequence = 3; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell*Digital*Delivery*"; SilentSwitch = "/qn"; Sequence = 2; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 6"; SearchString = "Microsoft*Windows*Desktop*Runtime*6*(x64)*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/quiet /norestart"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 8"; SearchString = "Microsoft*Windows*Desktop*Runtime*8*(x64)*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/quiet /norestart"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 9"; SearchString = "Microsoft*Windows*Desktop*Runtime*9*(x64)*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/quiet /norestart"}
-                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 10"; SearchString = "Microsoft*Windows*Desktop*Runtime*10*(x64)*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell*SupportAssist*OS*Recovery*Plugin*"; SetupSearchString = "Dell*SupportAssist*OS*Recovery*Plugin*"; SilentSwitch = "/S"; Sequence = 2; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell*Core*Services"; SetupSearchString = "Dell*Core*Services"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SetupSearchString = "Dell*Supportassist"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "It's part of install function because MSI and Exe are different"}
+                        [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell*Display*Peripheral*Manager"; SetupSearchString = "DDPM-Setup*"; SilentSwitch = "/uninst /silent"; Sequence = 1; Type = "EXE"; InstallSwitch = "/Silent"}
+                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell*Client*Device*Manager"; SetupSearchString = "Dell*Client*Device*Manager"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell*Command*Update*"; SetupSearchString = "Dell*Command*Update*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell*Command*Configure"; SetupSearchString = "Dell*Command*Configure"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SetupSearchString = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell*Command*Endpoint*Configure*Intune"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell*Command*Monitor"; SetupSearchString = "Dell*Command*Monitor"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell*Trusted*Device"; SetupSearchString = "Dell*Trusted*Device"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell*Optimizer"; SetupSearchString = "Dell*Optimizer"; SilentSwitch = "/Silent"; Sequence = 1; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "Dell*Device*Management*Agent"; SilentSwitch = "/qn"; Sequence = 1; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell*Pair"; SetupSearchString = "Dell*Pair"; SilentSwitch = "/S"; Sequence = 2; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell*Peripheral*Core"; SetupSearchString = "Dell*Peripheral*Core"; SilentSwitch = "/qn"; Sequence = 3; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell*Digital*Delivery*"; SetupSearchString = "Dell*Digital*Delivery*"; SilentSwitch = "/qn"; Sequence = 2; InstallSwitch = "/S"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 6"; SearchString = "Microsoft*Windows*Desktop*Runtime*6*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 8"; SearchString = "Microsoft*Windows*Desktop*Runtime*8*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 9"; SearchString = "Microsoft*Windows*Desktop*Runtime*9*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 10"; SearchString = "Microsoft*Windows*Desktop*Runtime*10*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                     )
 
-$SpecialInstallParameters = @(
-                                [PSCustomObject]@{NameParameter = ""; InstallSwitch = "/S"}
-                            )
-
 [version]$FileVersion = "0.0.0.0"
-[version]$ProgramVersionCurrent = "0.0.0.0"
 
 $FilePath = ".\"
 
@@ -280,10 +290,18 @@ $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -V
 # get current version as far installed
 $ProgramVersionCurrent = $SoftwareDetails.DisplayVersion | Sort-Object -Descending | Select-Object -First 1
 
+# avoid error with ms eventlogs as far no older version was found
+If ($null -eq $ProgramVersionCurrent)
+    {
+        [version]$ProgramVersionCurrent = "0.0.0.0"
+    }
+
 # get target version from installer
-$Filename = Get-ChildItem -Path $FilePath | Where-Object {$_.Name -like "$($Software.SearchString)*" } | Select-Object -ExpandProperty Name
+$Filename = Get-ChildItem -Path $FilePath | Where-Object {$_.Name -like "$($Software.SetupSearchString)*" } | Select-Object -ExpandProperty Name
 $FileExtension = [System.IO.Path]::GetExtension($Filename) | ForEach-Object { $_.Replace(".", "") }
-$FileVersion = Get-FileVersion -FilePath $FilePath -FileType $FileExtension -FileName $Filename
+
+$FileNamePath = Join-Path $FilePath $Filename
+$FileVersion = Get-FileVersion -FilePath $Filename -FileType $FileExtension -FileName $Filename
 
 # log Versions to eventlog
 Write-Verbose "Current Version: $ProgramVersionCurrent" -Verbose
@@ -296,24 +314,32 @@ $UninstallData = [PSCustomObject]@{
                                         SelectUninstall = $UninstallOldVersion
                                     } | ConvertTo-Json
 
-Write-EventLog -LogName Dell -Source "Dell Software Install" -EntryType Error -EventId 11 -Message $UninstallData
+Write-EventLog -LogName Dell -Source "Dell Software Install" -EntryType Information -EventId 10 -Message $UninstallData
 
 # Uninstall old version if requested
 If($UninstallOldVersion -eq $true)
     {
         try
             {
-                if (Test-Path (Join-Path $FilePath UniversialDellUninstall.ps1))
+                if($DellTool -notlike "Dell Trusted*")
                     {
-                        Write-Verbose "UniversialDellUninstall.ps1 found" -Verbose
+                        if (Test-Path (Join-Path $FilePath UniversialDellUninstall.ps1))
+                            {
+                                Write-Verbose "UniversialDellUninstall.ps1 found" -Verbose
 
-                        # snap-in uninstall universal script
-                        & (Join-Path $FilePath UniversialDellUninstall.ps1) -DellTool "$DellTool"
+                                # snap-in uninstall universal script
+                                & (Join-Path $FilePath UniversialDellUninstall.ps1) -DellTool "$DellTool"
+                            }
+                        else
+                            {
+                                Write-Verbose "UniversialDellUninstall.ps1 not found" -Verbose
+                            }
                     }
                 else
                     {
-                        Write-Verbose "UniversialDellUninstall.ps1 not found" -Verbose
+                        Write-Verbose "Dell Trusted Device required a restart after uninstall, that´s why this script support only an application upgrade to avoid a restart" -Verbose
                     }
+
             }
         catch
             {
@@ -331,19 +357,19 @@ if ($FileVersion -gt $ProgramVersionCurrent)
         Write-Verbose "Newer version of $($Software.NameParameter) is available. Current: $ProgramVersionCurrent, Target: $FileVersion" -Verbose
 
         # install new version
-        Install-DellTool -InstallString $Software.InstallSwitch -FullPathFile $FilePath -FileType $Software.Type
+        Install-DellTool -InstallString $Software.InstallSwitch -FullPathFile $FileNamePath -FileType $FileExtension
 
 
         $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
 
-            If ($null -ne $UninstallResult -and $ProgramVersion_target -gt $ProgramVersionCurrent)
+            If ($null -ne $UninstallResult -and $FileVersion -gt $ProgramVersionCurrent)
                     {
 
                         Write-Verbose "Installation is successful" -Verbose
 
                         $UninstallData = [PSCustomObject]@{
-                                                            Software = $($SoftwareName).$NamePattern
-                                                            Version = $ProgramVersionCurrent.ToString()
+                                                            Software = $($Software.NameParameter)
+                                                            Version = $FileVersion
                                                             Install = $true
                                                             Uninstall = $UninstallOldVersion
                                                             Reason = "Update/Install/Newer Version"
@@ -357,7 +383,7 @@ if ($FileVersion -gt $ProgramVersionCurrent)
 
                         $UninstallData = [PSCustomObject]@{
                                                             Software = $($SoftwareName).$NamePattern
-                                                            Version = $ProgramVersionCurrent.ToString()
+                                                            Version = $FileVersion
                                                             Install = $true
                                                             Uninstall = $UninstallOldVersion
                                                             Reason = "Older Version installed $ProgramVersion_current"
