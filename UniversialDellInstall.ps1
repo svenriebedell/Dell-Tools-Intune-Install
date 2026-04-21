@@ -53,9 +53,16 @@ Change Log
 #>
 
 param(
-            [Parameter(mandatory=$true)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10")][String]$DellTool,
-            [Parameter(mandatory=$true)][ValidateSet("true","false")][string]$UninstallOldVersion
+            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10")][String]$DellTool,
+            [Parameter(mandatory=$false)][ValidateSet("true","false")][string]$UninstallOldVersion
     )
+
+# Fallback if parameters are not provided by script call
+if (-not $DellTool)  { $DellTool  = "Dell SupportAssist" }
+if (-not $UninstallOldVersion) { $UninstallOldVersion = "false" }
+
+$DEPLOYMENTKEY = "Dell2026#" #only required for Dell SupportAssist MSI deployment
+$DCDMGROUPTOKEN = "0pO4XIY7XWee37+kCiGok424O6iDtAx5j1bg1t0gi67/jcLiKgZRssts4CtcUovr3fu7Pw==" #only required for Dell Client Device Manager
 
 ##############################################
 #### Function section                     ####
@@ -137,7 +144,6 @@ function Get-FileVersion
     {
         param (
                 [Parameter(Mandatory=$true)][string]$FileName,
-                [Parameter(Mandatory=$true)][string]$FilePath,
                 [Parameter(Mandatory=$true)][ValidateSet("MSI", "EXE")][string]$FileType
         )
 
@@ -195,8 +201,7 @@ function Install-DellTool
         )
 
         $SupportAssist = @(
-                            [PSCustomObject]@{Type = "MSI"; InstallSwitch = 'ADDLOCAL="BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS" TRANSFORMS=".\SupportAssistConfiguration.mst" DEPLOYMENTKEY="Dell2026#" SOURCE=TechDirect /norestart /qn'}
-                            [PSCustomObject]@{Type = "EXE"; InstallSwitch = 'ADDLOCAL="BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS" SOURCE=TechDirect /norestart /qn'}
+                            [PSCustomObject]@{Type = "MST"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' TRANSFORMS='.\SupportAssistConfiguration.mst' DEPLOYMENTKEY='$DEPLOYMENTKEY' SOURCE=TechDirect /norestart /qn /l+ 'c:\temp\SupportAssistMsi.log'"}
                         )
 
         If($FileType -eq "MSI")
@@ -204,16 +209,44 @@ function Install-DellTool
                 # Install MSI
                 try
                     {
-                        If ($FullPathFile -notlike "SupportAssistInstaller*")
+                        If ($FullPathFile -notlike "*SupportAssist*")
                             {
-                                Start-Process "msiexec.exe" -ArgumentList "/i `"$FullPathFile`" $InstallString /qn /norestart" -Wait -NoNewWindow
+                                Start-Process msiexec.exe -ArgumentList "/i `"$FullPathFile`" $InstallString /qn /norestart" -Wait -NoNewWindow
                                 Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
                             }
                         else
                             {
-                                $ArgumentList = $SupportAssist | Where-Object {$_.type -eq "MSI"} | Select-Object -ExpandProperty InstallSwitch
+                                #check for MST file
+                                $MSTFound = Test-Path .\SupportAssistConfiguration.mst
 
-                                Start-Process "msiexec.exe" -ArgumentList "/i $ArgumentList" -Wait -NoNewWindow
+                                If($MSTFound -eq $true)
+                                    {
+                                        # create log path
+                                        try
+                                            {
+                                                New-Item -Path C:\temp -ItemType Directory -ErrorAction Stop
+                                            }
+                                        catch
+                                            {
+                                                Write-Verbose "Logging path exist" -Verbose
+                                            }
+                                        
+                                        # build Support MSI install agrumentlist
+                                        $Argument = $SupportAssist | Where-Object {$_.type -eq "MST"} | Select-Object -ExpandProperty InstallSwitch
+                                        $ArgumentList = "/i '"+ $FileNamePath + "' " + $Argument
+                                        $ArgumentList = $ArgumentList.Replace("'",'"')
+                                        $ArgumentList = $ArgumentList.Replace(".\","")
+
+                                        Start-Process msiexec.exe -ArgumentList $ArgumentList -Wait -NoNewWindow
+                                    }
+                                else
+                                    {
+                                        # Install without MST File
+                                        $ArgumentList = $InstallString.Replace("'",'"')
+                                        $FullPathFile = $FullPathFile.Replace(".\","")
+                                        Start-Process .\$FullPathFile -ArgumentList $InstallString -Wait -NoNewWindow
+                                    }
+
                                 Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
                             }
                     }
@@ -227,8 +260,56 @@ function Install-DellTool
                 # Install EXE
                 try
                     {
-                        Start-Process "$FullPathFile" -ArgumentList "$InstallString /S" -Wait -NoNewWindow
-                        Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                        If ($FullPathFile -notlike "*DellDeviceManagementAgent.SubAgent*" -or $FullPathFile -notlike "*SupportAssist*")
+                            {
+                                Start-Process "$FullPathFile" -ArgumentList "$InstallString /S" -Wait -NoNewWindow
+                                Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                            }
+                        else
+                            {
+                                If ($FullPathFile -notlike "*SupportAssist*")
+                                    {
+                                        # build Support EXE install agrumentlist
+                                        $ArgumentList = $InstallString.Replace("'",'"')
+                                        $FullPathFile = $FullPathFile.Replace(".\","")
+                                        Start-Process .\$FullPathFile -ArgumentList $InstallString -Wait -NoNewWindow
+                                    }
+                                else
+                                    {
+                                        #check for MST file
+                                        $MSTFound = Test-Path .\SupportAssistConfiguration.mst
+
+                                        If($MSTFound -eq $true)
+                                            {
+                                                # create log path
+                                                try
+                                                    {
+                                                        New-Item -Path C:\temp -ItemType Directory -ErrorAction Stop
+                                                    }
+                                                catch
+                                                    {
+                                                        Write-Verbose "Logging path exist" -Verbose
+                                                    }
+                                                
+                                                # build Support MSI install agrumentlist
+                                                $Argument = $SupportAssist | Where-Object {$_.type -eq "MST"} | Select-Object -ExpandProperty InstallSwitch
+                                                Start-Process "$FullPathFile" -ArgumentList $Argument -Wait -NoNewWindow
+                                            }
+                                        else
+                                            {
+                                                # Install without MST File
+                                                $ArgumentList = $InstallString.Replace("'",'"')
+                                                $FullPathFile = $FullPathFile.Replace(".\","")
+                                                Start-Process .\$FullPathFile -ArgumentList $InstallString -Wait -NoNewWindow
+                                            }
+
+                                        Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                                    }
+                                
+                                Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
+                                
+
+                            }
                     }
                 catch
                     {
@@ -243,9 +324,10 @@ function Install-DellTool
 $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell*SupportAssist*OS*Recovery*Plugin*"; SetupSearchString = "Dell*SupportAssist*OS*Recovery*Plugin*"; SilentSwitch = "/S"; Sequence = 2; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell*Core*Services"; SetupSearchString = "Dell*Core*Services"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SetupSearchString = "Dell*Supportassist"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "It's part of install function because MSI and Exe are different"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist Remediation"; SearchString = "Dell*Supportassist*Remediation"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell*Display*Peripheral*Manager"; SetupSearchString = "DDPM-Setup*"; SilentSwitch = "/uninst /silent"; Sequence = 1; Type = "EXE"; InstallSwitch = "/Silent"}
-                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell*Client*Device*Manager"; SetupSearchString = "Dell*Client*Device*Manager"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/qn"}
+                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "DellDeviceManagementAgent.SubAgent*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = '/s /v"/qn GROUPTOKEN="{0}" URL="https://device.manage.dell.com" /lv* C:\ProgramData\Dell\DDMA_installer.log"' -f $DCDMGROUPTOKEN}
                         [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell*Command*Update*"; SetupSearchString = "Dell*Command*Update*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell*Command*Configure"; SetupSearchString = "Dell*Command*Configure"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SetupSearchString = "Dell Command | Endpoint Configure for Microsoft Intune"; SearchString = "Dell*Command*Endpoint*Configure*Intune"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
@@ -297,11 +379,11 @@ If ($null -eq $ProgramVersionCurrent)
     }
 
 # get target version from installer
-$Filename = Get-ChildItem -Path $FilePath | Where-Object {$_.Name -like "$($Software.SetupSearchString)*" } | Select-Object -ExpandProperty Name
+$Filename = Get-ChildItem -Path $FilePath | Where-Object {$_.Name -like "$($Software.SetupSearchString)*.exe" -or $_.Name -like "$($Software.SetupSearchString)*.msi"  } | Select-Object -ExpandProperty Name
 $FileExtension = [System.IO.Path]::GetExtension($Filename) | ForEach-Object { $_.Replace(".", "") }
 
 $FileNamePath = Join-Path $FilePath $Filename
-$FileVersion = Get-FileVersion -FilePath $Filename -FileType $FileExtension -FileName $Filename
+$FileVersion = Get-FileVersion -FileType $FileExtension -FileName $Filename
 
 # log Versions to eventlog
 Write-Verbose "Current Version: $ProgramVersionCurrent" -Verbose
@@ -369,7 +451,7 @@ if ($FileVersion -gt $ProgramVersionCurrent)
 
                         $UninstallData = [PSCustomObject]@{
                                                             Software = $($Software.NameParameter)
-                                                            Version = $FileVersion
+                                                            Version = $FileVersion.ToString()
                                                             Install = $true
                                                             Uninstall = $UninstallOldVersion
                                                             Reason = "Update/Install/Newer Version"
@@ -383,7 +465,7 @@ if ($FileVersion -gt $ProgramVersionCurrent)
 
                         $UninstallData = [PSCustomObject]@{
                                                             Software = $($SoftwareName).$NamePattern
-                                                            Version = $FileVersion
+                                                            Version = $FileVersion.ToString()
                                                             Install = $true
                                                             Uninstall = $UninstallOldVersion
                                                             Reason = "Older Version installed $ProgramVersion_current"
