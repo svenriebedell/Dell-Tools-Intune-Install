@@ -265,7 +265,7 @@ Try
                     {
                         $SoftwareDetails = $SoftwareDetails | Where-Object {$Null -eq $_.InstallLocation}
                     }
-                
+
                 # cover uninstall string not exist. This will be automaticlly a msi uninstall by default
                 try
                     {
