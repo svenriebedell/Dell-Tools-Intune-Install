@@ -61,7 +61,7 @@ param(
 if (-not $DellTool)  { $DellTool  = "Dell SupportAssist" }
 if (-not $UninstallOldVersion) { $UninstallOldVersion = "false" }
 
-$DEPLOYMENTKEY = "Dell2026#" #only required for Dell SupportAssist MSI deployment
+$DEPLOYMENTKEY = "Add your Deploymentkey you have used at the deployment package creator" #only required for Dell SupportAssist MSI deployment
 $DCDMGROUPTOKEN = "Add your Group token" #only required for Dell Client Device Manager
 
 ##############################################
@@ -230,7 +230,7 @@ function Install-DellTool
                                             {
                                                 Write-Verbose "Logging path exist" -Verbose
                                             }
-                                        
+
                                         # build Support MSI install agrumentlist
                                         $Argument = $SupportAssist | Where-Object {$_.type -eq "MST"} | Select-Object -ExpandProperty InstallSwitch
                                         $ArgumentList = "/i '"+ $FileNamePath + "' " + $Argument
@@ -290,7 +290,7 @@ function Install-DellTool
                                                     {
                                                         Write-Verbose "Logging path exist" -Verbose
                                                     }
-                                                
+
                                                 # build Support MSI install agrumentlist
                                                 $Argument = $SupportAssist | Where-Object {$_.type -eq "MST"} | Select-Object -ExpandProperty InstallSwitch
                                                 Start-Process "$FullPathFile" -ArgumentList $Argument -Wait -NoNewWindow
@@ -305,10 +305,8 @@ function Install-DellTool
 
                                         Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
                                     }
-                                
-                                Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
-                                
 
+                                Write-Information "Successfully installed $FullPathFile" -InformationAction Continue
                             }
                     }
                 catch

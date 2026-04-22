@@ -28,7 +28,7 @@ limitations under the License.
    This script support the following applications
         - Dell Core Services
         - Dell SupportAssist (only Version 5.x and higher)
-        - Dell SupportAssist OS Recovery
+        - Dell SupportAssist Remediation
         - Dell SupportAssist OS Recovery Plugin for Dell Update
         - Dell Display and Peripheral Manager
         - Dell Client Device Manager
