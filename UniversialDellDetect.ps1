@@ -31,14 +31,13 @@ limitations under the License.
         - Dell SupportAssist Remediation
         - Dell SupportAssist OS Recovery Plugin for Dell Update
         - Dell Display and Peripheral Manager
-        - Dell Client Device Manager
+        - Dell Device Management Agent (Agent for Dell Device Management Console for Peripherals updates)
         - Dell Command | Update (Universal App and Classic)
         - Dell Command | Configure
         - Dell Command | Endpoint Configure for Microsoft Intune
         - Dell Command | Monitor
         - Dell Trusted Device
         - Dell Optimizer
-        - Dell Device Management Agent
         - Dell Pair
         - Dell Peripheral Core
         - Dell Digital Delivery
@@ -71,7 +70,7 @@ limitations under the License.
 
 
 param(
-            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist","Dell SupportAssist Remediation", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display and Peripheral Manager", "Dell Client Device Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Peripheral Core", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime")][String]$DellTool,
+            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist","Dell SupportAssist Remediation", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display and Peripheral Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Peripheral Core", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime")][String]$DellTool,
             [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$VersionIS,
             [Parameter(mandatory=$false)][Version]$Version
     )
@@ -90,7 +89,8 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist Remediation"; SearchString = "Dell*Supportassist*Remediation"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell*Display*Peripheral*Manager"; SetupSearchString = "DDPM-Setup*"; SilentSwitch = "/uninst /silent"; Sequence = 1; Type = "EXE"; InstallSwitch = "/Silent"}
-                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "DellDeviceManagementAgent.SubAgent*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = '/s /v"/qn GROUPTOKEN="{0}" URL="https://device.manage.dell.com" /lv* C:\ProgramData\Dell\DDMA_installer.log"' -f $DCDMGROUPTOKEN}
+                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "DellDeviceManagementAgent.SubAgent*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = '/s /v"/qn GROUPTOKEN="{0}" URL="https://device.manage.dell.com" /lv* C:\ProgramData\Dell\DDMA_installer.log"' -f $DCDMGROUPTOKEN}
+                        [PSCustomObject]@{NameParameter = "Dell Client Device Manager"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "Dell_Client_Device_Manager*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Update"; SearchString = "Dell*Command*Update*"; SetupSearchString = "Dell*Command*Update*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Configure"; SearchString = "Dell*Command*Configure"; SetupSearchString = "Dell*Command*Configure"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Command | Endpoint Configure for Microsoft Intune"; SetupSearchString = "Dell-Command-Endpoint*"; SearchString = "Dell*Command*Endpoint*Configure*Intune"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
