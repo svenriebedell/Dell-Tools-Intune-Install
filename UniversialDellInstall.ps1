@@ -50,6 +50,20 @@ Change Log
         - Dell Digital Delivery
         - Microsoft Windows Desktop Runtime (because some Dell tools require this as preparation)
 
+        .Parameter DellTool
+        Value is the Name of Dell Application to looking for like example Dell Trusted Device
+
+        .Parameter UninstallOldVersion
+        Value is True or False to uninstall the old version of the Dell Tool (becareful to clean an existing installation because of some tools doing a deregistration or requrie a reboot)
+
+        .Example
+        This will install Dell Command | Update but not uninstall the old version
+        UniversialDellInstall.ps1 -DellTool 'Dell Command | Update' -UninstallOldVersion $False
+
+        .Example
+        This will install Dell Command | Update and uninstall the old version
+        UniversialDellInstall.ps1 -DellTool 'Dell Command | Update' -UninstallOldVersion $True
+
 #>
 
 param(
