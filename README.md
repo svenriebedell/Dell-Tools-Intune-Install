@@ -161,7 +161,8 @@ Cleanly removes the targeted software. Supports removing a single tool, **all** 
 ## 🔄 Parameter Fallback Logic
 
 The scripts accept parameters at runtime. However, if your deployment platform **does not support passing script parameters**, each script contains an internal fallback section where you can hard-code the target Dell tool and options. This ensures compatibility across all deployment methods.
-#<img width="1541" height="865" alt="image-8" src="https://github.com/user-attachments/assets/fde6df81-cb5b-4220-a408-525f82fc964f" />
+<img width="925" height="117" alt="image" src="https://github.com/user-attachments/assets/a6e70cbc-d078-403f-b049-4563884d1967" />
+
 
 # Deployment by Microsoft Intune
 
@@ -169,16 +170,14 @@ The scripts accept parameters at runtime. However, if your deployment platform *
 
 **Prerequisites**
 If you want to install the Dell Device Management Agent or Dell SupportAssist by MST to need to modify the universalinstall.ps1 to add your registration informations.
-
-<img width="1864" height="188" alt="image-3" src="https://github.com/user-attachments/assets/af6fd9b7-2171-42ff-b9aa-c80ada19316f" />
+<img width="2000" height="82" alt="image-1" src="https://github.com/user-attachments/assets/c3e3cf33-0420-4d9b-9371-a3250d0b2f33" />
 
 otherwise the installation will fail or not register the device to Dell Device Management Console or Dell Techdirect.
 
 **Step 1: Download the required tool or using my https://github.com/svenriebedell/DellApp-Download-Manager to having a local repository of all tools**
 
 **Step 2: Create a new a new IntuneWin package**
-<img width="1136" height="321" alt="image-4" src="https://github.com/user-attachments/assets/fcaa848c-72f7-4bb6-aadf-b16671c50bfc" />
-
+<img width="1864" height="188" alt="image-3" src="https://github.com/user-attachments/assets/31df03ed-beb9-40c2-afe7-80cc42cd5547" />
 
 **Step 3: Upload the IntuneWin package to Microsoft Intune**
 <img width="1136" height="321" alt="image-4" src="https://github.com/user-attachments/assets/7d82feb0-a094-4e39-8805-0e637d79a878" />
