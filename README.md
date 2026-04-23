@@ -36,10 +36,10 @@
 | Dell Pair | ✅ | ✅ | ✅ |
 | Dell Peripheral Core | — | ✅ | ✅ |
 | Dell Digital Delivery | ✅ | ✅ | ✅ |
-| Dell Command | Update (Universal App and Classic) | ✅ | ✅ | ✅ |
-| Dell Command | Configure | ✅ | ✅ | ✅ |
-| Dell Command | Endpoint Configure for Microsoft Intune | ✅ | ✅ | ✅ |
-| Dell Command | Monitor | ✅ | ✅ | ✅ |
+| Dell Command Update (Universal App and Classic) | ✅ | ✅ | ✅ |
+| Dell Command Configure | ✅ | ✅ | ✅ |
+| Dell Command Endpoint Configure for Microsoft Intune | ✅ | ✅ | ✅ |
+| Dell Command Monitor | ✅ | ✅ | ✅ |
 | Dell Trusted Device | ✅ | ✅ | ✅ |
 | Dell Optimizer | ✅ | ✅ | ✅ |
 | Microsoft Windows Desktop Runtime | ✅ | ✅ | ✅ |
@@ -161,8 +161,7 @@ Cleanly removes the targeted software. Supports removing a single tool, **all** 
 ## 🔄 Parameter Fallback Logic
 
 The scripts accept parameters at runtime. However, if your deployment platform **does not support passing script parameters**, each script contains an internal fallback section where you can hard-code the target Dell tool and options. This ensures compatibility across all deployment methods.
-
-![alt text](image.png)
+#<img width="1541" height="865" alt="image-8" src="https://github.com/user-attachments/assets/fde6df81-cb5b-4220-a408-525f82fc964f" />
 
 # Deployment by Microsoft Intune
 
@@ -171,32 +170,32 @@ The scripts accept parameters at runtime. However, if your deployment platform *
 **Prerequisites**
 If you want to install the Dell Device Management Agent or Dell SupportAssist by MST to need to modify the universalinstall.ps1 to add your registration informations.
 
-![alt text](image-1.png)
+<img width="1864" height="188" alt="image-3" src="https://github.com/user-attachments/assets/af6fd9b7-2171-42ff-b9aa-c80ada19316f" />
 
 otherwise the installation will fail or not register the device to Dell Device Management Console or Dell Techdirect.
 
 **Step 1: Download the required tool or using my https://github.com/svenriebedell/DellApp-Download-Manager to having a local repository of all tools**
 
 **Step 2: Create a new a new IntuneWin package**
-![alt text](image-3.png)
+<img width="1136" height="321" alt="image-4" src="https://github.com/user-attachments/assets/fcaa848c-72f7-4bb6-aadf-b16671c50bfc" />
+
 
 **Step 3: Upload the IntuneWin package to Microsoft Intune**
-![alt text](image-4.png)
+<img width="1136" height="321" alt="image-4" src="https://github.com/user-attachments/assets/7d82feb0-a094-4e39-8805-0e637d79a878" />
+
 
 **Step 4: Prepare scripts and upload to Intune**
-![alt text](image-5.png)
+<img width="2016" height="219" alt="image-5" src="https://github.com/user-attachments/assets/57247cb7-0569-419b-8c61-a64b27c6d565" />
 
-You need to work with the fallback section in the scripts to set the parameters, because intune not support call the script with parameters.
+You need to work with the fallback section in these scripts to set the parameters, because intune not support call the script with parameters.
 
-![alt text](image-6.png)
+**Step 5: Upload these scripts to Intune**
+<img width="1277" height="618" alt="image-6" src="https://github.com/user-attachments/assets/842e3310-7e46-4f30-8e8e-b219c7f5d7ab" />
 
-![alt text](image-7.png)
-
+<img width="1291" height="995" alt="image-7" src="https://github.com/user-attachments/assets/159fb8f0-8c27-45b0-8c5b-8ede19c2ed31" />
 
 **Step 6: Assign the application to the required devices**
-![alt text](image-8.png)
-
-
+<img width="1541" height="865" alt="image-8" src="https://github.com/user-attachments/assets/c4ef9700-9074-4a1d-93f6-40f84ff03cb2" />
 
 # Classic Single App Deployment scripts
 
