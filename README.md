@@ -34,9 +34,6 @@
 | Dell Pair | ✅ | ✅ | ✅ |
 | Dell Peripheral Core | — | ✅ | ✅ |
 | Dell Digital Delivery | ✅ | ✅ | ✅ |
-| Dell Pair | ✅ | ✅ | ✅ |
-| Dell Peripheral Core | — | ✅ | ✅ |
-| Dell Digital Delivery | ✅ | ✅ | ✅ |
 | Dell Command Update (Universal App and Classic) | ✅ | ✅ | ✅ |
 | Dell Command Configure | ✅ | ✅ | ✅ |
 | Dell Command Endpoint Configure for Microsoft Intune | ✅ | ✅ | ✅ |
