@@ -27,6 +27,7 @@
 | Application | Install | Uninstall | Detection |
 |:--|:--:|:--:|:--:|
 | Dell Core Services | ✅ | ✅ | ✅ |
+| Dell SupportAssist | ✅ | ✅ | ✅ |
 | Dell SupportAssist Remediation | — | ✅ | ✅ |
 | Dell SupportAssist OS Recovery Plugin for Dell Update | ✅ | ✅ | ✅ |
 | Dell Device Management Agent | ✅ | ✅ | ✅ |
