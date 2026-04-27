@@ -13,7 +13,7 @@
   A single, streamlined script structure designed to cover multiple Dell applications.
 
 - **Expanded Dell SupportAssist Options**
-  Now supports various installation methods:
+  Now it supports various installation methods:
   - Installer EXE
   - Installer MSI
   - Registration via ADMX or MST
@@ -41,9 +41,10 @@
 | Dell Trusted Device | ✅ | ✅ | ✅ |
 | Dell Optimizer | ✅ | ✅ | ✅ |
 | Microsoft Windows Desktop Runtime | ✅ | ✅ | ✅ |
+| ASP.NET Core Runtime | ✅ | ✅ | ✅ |
 
 
-## 📦 Not Supported Applications (you need to use the single scripts if needed)
+## 📦 Not Supported Applications by universal scripts (you need to use the single scripts if needed)
 - Dell Power Manager
 - Dell Peripheral Manager
 - Dell Display Manager 1 and 2
@@ -63,15 +64,15 @@ A set of **universal PowerShell scripts** that simplify deploying, detecting, an
 - Administrator privileges
 - Microsoft Intune (recommended) or any Win32-app deployment tool
 
-
-.\Install_Dell_Tools.ps1
-.\Detection_Dell_Tools.ps1
-.\Uninstall_Dell_Tools.ps1
+## ⚙️ Files
+.\UniversalDellInstall.ps1
+.\UniversalDellUninstall.ps1
+.\UniversalDellDetection.ps1
 
 
 ## 📜 Scripts Reference
 
-### 1 · Detection Script – `Detection_Dell_Tools.ps1`
+### 1 · Detection Script – `UniversalDellDetection.ps1`
 
 Use this as a **custom detection rule** in Intune to verify whether a specific Dell tool is installed at the correct version.
 
@@ -100,12 +101,12 @@ Use this as a **custom detection rule** in Intune to verify whether a specific D
 
 ```powershell
 # Check that Dell Command | Update version 5.6.0 is installed
-.\Detection_Dell_Tools.ps1 -DellTool 'Dell Command | Update' -VersionIS Equal -Version 5.6.0
+.\UniversalDellDetection.ps1 -DellTool 'Dell Command | Update' -VersionIS Equal -Version 5.6.0
 ```
 
 ---
 
-### 2 · Install Script – `Install_Dell_Tools.ps1`
+### 2 · Install Script – `UniversalDellInstall.ps1`
 
 Executes the installation of the specified Dell application, with an optional clean-uninstall-first workflow.
 
@@ -122,15 +123,15 @@ Executes the installation of the specified Dell application, with an optional cl
 
 ```powershell
 # In-place upgrade (recommended for most scenarios)
-.\Install_Dell_Tools.ps1 -DellTool 'Dell Command | Update' -UninstallOldVersion $False
+.\UniversalDellInstall.ps1 -DellTool 'Dell Command | Update' -UninstallOldVersion $False
 
 # Clean install – removes existing version first
-.\Install_Dell_Tools.ps1 -DellTool 'Dell Command | Update' -UninstallOldVersion $True
+.\UniversalDellInstall.ps1 -DellTool 'Dell Command | Update' -UninstallOldVersion $True
 ```
 
 ---
 
-### 3 · Uninstall Script – `Uninstall_Dell_Tools.ps1`
+### 3 · Uninstall Script – `UniversalDellUninstall.ps1`
 
 Cleanly removes the targeted software. Supports removing a single tool, **all** recognized Dell tools at once, or even shared prerequisites.
 
@@ -144,13 +145,13 @@ Cleanly removes the targeted software. Supports removing a single tool, **all** 
 
 ```powershell
 # Remove a specific tool
-.\Uninstall_Dell_Tools.ps1 -DellTool 'Dell Command | Update'
+.\UniversalDellUninstall.ps1 -DellTool 'Dell Command | Update'
 
 # Remove ALL recognized Dell tools
-.\Uninstall_Dell_Tools.ps1 -DellTool 'AllDell'
+.\UniversalDellUninstall.ps1 -DellTool 'AllDell'
 
 # Remove a shared prerequisite
-.\Uninstall_Dell_Tools.ps1 -DellTool 'Microsoft Windows Desktop Runtime 8'
+.\UniversalDellUninstall.ps1 -DellTool 'Microsoft Windows Desktop Runtime 8'
 ```
 
 ---
@@ -166,7 +167,7 @@ The scripts accept parameters at runtime. However, if your deployment platform *
 > **Tip:** For detailed Intune packaging and deployment walkthroughs, see the [Microsoft Intune Win32 app documentation](https://learn.microsoft.com/mem/intune/apps/apps-win32-app-management).
 
 **Prerequisites**
-If you want to install the Dell Device Management Agent or Dell SupportAssist by MST to need to modify the universalinstall.ps1 to add your registration informations.
+If you want to install the Dell Device Management Agent or Dell SupportAssist by MST to need to modify the universalinstall.ps1 to add your registration information's.
 <img width="2000" height="82" alt="image-1" src="https://github.com/user-attachments/assets/c3e3cf33-0420-4d9b-9371-a3250d0b2f33" />
 
 otherwise the installation will fail or not register the device to Dell Device Management Console or Dell Techdirect.
@@ -193,6 +194,8 @@ You need to work with the fallback section in these scripts to set the parameter
 **Step 6: Assign the application to the required devices**
 <img width="1541" height="865" alt="image-8" src="https://github.com/user-attachments/assets/c4ef9700-9074-4a1d-93f6-40f84ff03cb2" />
 
+
+
 # Classic Single App Deployment scripts
 
 **Old**
@@ -202,7 +205,7 @@ Latest Version of document: **1.2.5**
 ## Changelog:
 - 1.0.0   initial version
 - 1.1.1   Updating some Text in Deployment Instruction like. DDM2.0 download
-- 1.2.0   + renaming to Microsoft Intune  + Add separat informations and script to support Dell Display Manager 2.x + Add dependency app informations to Dell Optimizer to cover required .net 6 runtime since optimizer 4.0.201.0
+- 1.2.0   + renaming to Microsoft Intune  + Add separat information's and script to support Dell Display Manager 2.x + Add dependency app information's to Dell Optimizer to cover required .net 6 runtime since optimizer 4.0.201.0
 - 1.2.1   Correct Display Manager 2 Install/Uninstall to run with PowerShell 32 Bit
 - 1.2.2	  Update Install instruction Dell Support Assist, add .net 6.x dependency
 - 1.2.3   Add Dell Peripheral Manager to this document
@@ -217,9 +220,9 @@ You will find for all Applications scripts for install, uninstall and detection.
 This and more you will find in Deployment Guide **Install_Instruction_Dell_Tools_with_ MEM_V1_2_5.pdf** stored in this repository
 
 This Guide covers deployment of the following **Dell Tools**
-Dell Command | Monitor
-Dell Command | Configure
-Dell Command | Update Universal Application
+Dell Command Monitor
+Dell Command Configure
+Dell Command Update Universal Application
 Dell Optimizer
 Dell Power Manager
 Dell Trusted Device
