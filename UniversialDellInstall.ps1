@@ -47,7 +47,8 @@ Change Log
         - Dell Pair
         - Dell Peripheral Core
         - Dell Digital Delivery
-        - Microsoft Windows Desktop Runtime (because some Dell tools require this as preparation)
+        - Microsoft Windows Desktop Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
+        - Microsoft ASP.Net Core Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
 
         .Parameter DellTool
         Value is the Name of Dell Application to looking for like example Dell Trusted Device
@@ -66,12 +67,12 @@ Change Log
 #>
 
 param(
-            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Device Management Agent","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10")][String]$DellTool,
+            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Device Management Agent","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10","Microsoft ASP.Net Core Runtime 6","Microsoft ASP.Net Core Runtime 8","Microsoft ASP.Net Core Runtime 9","Microsoft ASP.Net Core Runtime 10")][String]$DellTool,
             [Parameter(mandatory=$false)][ValidateSet("true","false")][string]$UninstallOldVersion
     )
 
 # Fallback if parameters are not provided by script call
-if (-not $DellTool)  { $DellTool  = "Dell SupportAssist" }
+if (-not $DellTool)  { $DellTool  = "Microsoft Windows Desktop Runtime 10" }
 if (-not $UninstallOldVersion) { $UninstallOldVersion = "false" }
 
 $DEPLOYMENTKEY = "Add your Deploymentkey you have used at the deployment package creator" #only required for Dell SupportAssist MSI deployment
@@ -106,7 +107,7 @@ function Test-SoftwareInstalled
             {
                 try
                     {
-                        If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                        If ($NamePattern -notmatch "Microsoft.*Windows.*Desktop.*Runtime.*(x64).*" -and $NamePattern -notmatch "Microsoft.*ASP.Net.*Core.*(x64).*")
                             {
                                 Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
                             }
@@ -114,7 +115,8 @@ function Test-SoftwareInstalled
                             {
                                 If ($path -like $paths[1])
                                     {
-                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                        # try to cover wrong .net Version seen with some installer
+                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern -and ([version]$_.DisplayVersion).Major -eq $VersionPattern.Major }
                                     }
                             }
                     }
@@ -346,7 +348,6 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell*Command*Monitor"; SetupSearchString = "Dell*Command*Monitor"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell*Trusted*Device"; SetupSearchString = "Dell*Trusted*Device"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell*Optimizer"; SetupSearchString = "Dell*Optimizer"; SilentSwitch = "/Silent"; Sequence = 1; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "Dell*Device*Management*Agent"; SilentSwitch = "/qn"; Sequence = 1; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell*Pair"; SetupSearchString = "Dell*Pair"; SilentSwitch = "/S"; Sequence = 2; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell*Peripheral*Core"; SetupSearchString = "Dell*Peripheral*Core"; SilentSwitch = "/qn"; Sequence = 3; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell*Digital*Delivery*"; SetupSearchString = "Dell*Digital*Delivery*"; SilentSwitch = "/qn"; Sequence = 2; InstallSwitch = "/S"}
@@ -354,6 +355,10 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 8"; SearchString = "Microsoft*Windows*Desktop*Runtime*8*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 9"; SearchString = "Microsoft*Windows*Desktop*Runtime*9*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 10"; SearchString = "Microsoft*Windows*Desktop*Runtime*10*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 6"; SearchString = "Microsoft*ASP.Net*Core*6*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 8"; SearchString = "Microsoft*ASP.Net*Core*8*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 9"; SearchString = "Microsoft*ASP.Net*Core*9*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 10"; SearchString = "Microsoft*ASP.Net*Core*10*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                     )
 
 [version]$FileVersion = "0.0.0.0"
@@ -374,12 +379,19 @@ catch
     {
         Write-Verbose "Event source Dell Software Install exist." -Verbose
     }
-
+   
 # select the searchstring for function
 $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
 
+# get target version from installer
+$Filename = Get-ChildItem -Path $FilePath | Where-Object {$_.Name -like "$($Software.SetupSearchString)*.exe" -or $_.Name -like "$($Software.SetupSearchString)*.msi"  } | Select-Object -ExpandProperty Name
+$FileExtension = [System.IO.Path]::GetExtension($Filename) | ForEach-Object { $_.Replace(".", "") }
+
+$FileNamePath = Join-Path $FilePath $Filename
+[version]$FileVersion = Get-FileVersion -FileType $FileExtension -FileName $Filename
+
 # get Software details
-$SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+$SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern $FileVersion -ISPattern "Greater than or equal"
 
 # get current version as far installed
 $ProgramVersionCurrent = $SoftwareDetails.DisplayVersion | Sort-Object -Descending | Select-Object -First 1
@@ -387,15 +399,17 @@ $ProgramVersionCurrent = $SoftwareDetails.DisplayVersion | Sort-Object -Descendi
 # avoid error with ms eventlogs as far no older version was found
 If ($null -eq $ProgramVersionCurrent)
     {
-        [version]$ProgramVersionCurrent = "0.0.0.0"
+        # get Software details
+        $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern $FileVersion -ISPattern 'Less than or equal'
+
+        # get current version as far installed
+        $ProgramVersionCurrent = $SoftwareDetails.DisplayVersion | Sort-Object -Descending | Select-Object -First 1
+
+        If($null -eq $SoftwareDetails)
+            {
+                [version]$ProgramVersionCurrent = "0.0.0.0"
+            }
     }
-
-# get target version from installer
-$Filename = Get-ChildItem -Path $FilePath | Where-Object {$_.Name -like "$($Software.SetupSearchString)*.exe" -or $_.Name -like "$($Software.SetupSearchString)*.msi"  } | Select-Object -ExpandProperty Name
-$FileExtension = [System.IO.Path]::GetExtension($Filename) | ForEach-Object { $_.Replace(".", "") }
-
-$FileNamePath = Join-Path $FilePath $Filename
-$FileVersion = Get-FileVersion -FileType $FileExtension -FileName $Filename
 
 # log Versions to eventlog
 Write-Verbose "Current Version: $ProgramVersionCurrent" -Verbose
@@ -454,9 +468,9 @@ if ($FileVersion -gt $ProgramVersionCurrent)
         Install-DellTool -InstallString $Software.InstallSwitch -FullPathFile $FileNamePath -FileType $FileExtension
 
 
-        $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+        $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern $FileVersion -ISPattern Equal
 
-            If ($null -ne $UninstallResult -and $FileVersion -gt $ProgramVersionCurrent)
+            If ($null -ne $UninstallResult)
                     {
 
                         Write-Verbose "Installation is successful" -Verbose

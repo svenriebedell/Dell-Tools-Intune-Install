@@ -41,7 +41,8 @@ limitations under the License.
         - Dell Pair
         - Dell Peripheral Core
         - Dell Digital Delivery
-        - Microsoft Windows Desktop Runtime (because some Dell tools require this as preparation)
+        - Microsoft Windows Desktop Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
+        - Microsoft ASP.Net Core Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
 
         .Parameter DellTool
         Value is the Name of Dell Application to looking for like example Dell Trusted Device
@@ -70,15 +71,15 @@ limitations under the License.
 
 
 param(
-            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist","Dell SupportAssist Remediation", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display and Peripheral Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Peripheral Core", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime")][String]$DellTool,
+            [Parameter(mandatory=$false)][ValidateSet("Dell Core Services", "Dell SupportAssist","Dell SupportAssist Remediation", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display and Peripheral Manager", "Dell Command | Update", "Dell Command | Configure", "Dell Command | Endpoint Configure for Microsoft Intune", "Dell Command | Monitor", "Dell Trusted Device", "Dell Optimizer", "Dell Device Management Agent", "Dell Pair", "Dell Peripheral Core", "Dell Digital Delivery", "Microsoft Windows Desktop Runtime 6", "Microsoft Windows Desktop Runtime 8", "Microsoft Windows Desktop Runtime 9", "Microsoft Windows Desktop Runtime 10", "Microsoft ASP.Net Core Runtime 6", "Microsoft ASP.Net Core Runtime 8", "Microsoft ASP.Net Core Runtime 9", "Microsoft ASP.Net Core Runtime 10")][String]$DellTool,
             [Parameter(mandatory=$false)][ValidateSet("Equal","Not equal","Less than","Less than or equal","Greater than","Greater than or equal")][String]$VersionIS,
             [Parameter(mandatory=$false)][Version]$Version
     )
 
 # Fallback if parameters are not provided by script call
-if (-not $DellTool)  { $DellTool  = "Dell SupportAssist" }
+if (-not $DellTool)  { $DellTool  = "Dell Device Management Agent" }
 if (-not $VersionIS) { $VersionIS = "Greater than or equal" }
-if (-not $Version)   { $Version   = [Version]"5.0.1.2516" }
+if (-not $Version)   { $Version   = [Version]"26.03.0.816" }
 
 ##################################################
 # Varible Section                            #####
@@ -97,7 +98,6 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell*Command*Monitor"; SetupSearchString = "Dell*Command*Monitor"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell*Trusted*Device"; SetupSearchString = "Dell*Trusted*Device"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell*Optimizer"; SetupSearchString = "Dell*Optimizer"; SilentSwitch = "/Silent"; Sequence = 1; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "Dell*Device*Management*Agent"; SilentSwitch = "/qn"; Sequence = 1; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell*Pair"; SetupSearchString = "Dell*Pair"; SilentSwitch = "/S"; Sequence = 2; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell*Peripheral*Core"; SetupSearchString = "Dell*Peripheral*Core"; SilentSwitch = "/qn"; Sequence = 3; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell*Digital*Delivery*"; SetupSearchString = "Dell*Digital*Delivery*"; SilentSwitch = "/qn"; Sequence = 2; InstallSwitch = "/S"}
@@ -105,6 +105,10 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 8"; SearchString = "Microsoft*Windows*Desktop*Runtime*8*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 9"; SearchString = "Microsoft*Windows*Desktop*Runtime*9*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 10"; SearchString = "Microsoft*Windows*Desktop*Runtime*10*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 6"; SearchString = "Microsoft*ASP.Net*Core*6*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 8"; SearchString = "Microsoft*ASP.Net*Core*8*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 9"; SearchString = "Microsoft*ASP.Net*Core*9*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 10"; SearchString = "Microsoft*ASP.Net*Core*10*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                     )
 
 ##################################################
@@ -135,7 +139,7 @@ function Test-SoftwareInstalled
             {
                 try
                     {
-                        If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                        If ($NamePattern -notmatch "Microsoft.*Windows.*Desktop.*Runtime.*(x64).*" -and $NamePattern -notmatch "Microsoft.*ASP.Net.*Core.*(x64).*")
                             {
                                 Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
                             }
@@ -143,7 +147,8 @@ function Test-SoftwareInstalled
                             {
                                 If ($path -like $paths[1])
                                     {
-                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                        # try to cover wrong .net Version seen with some installer
+                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern -and ([version]$_.DisplayVersion).Major -eq $VersionPattern.Major }
                                     }
                             }
                     }
@@ -188,7 +193,8 @@ function Test-SoftwareInstalled
 
 Try
     {
-        $SoftwareName = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool} | select-object -ExpandProperty Searchstring
+        
+        $SoftwareName = $DellSoftwareList | where-object {$_.NameParameter -like $DellTool} | select-object -ExpandProperty Searchstring
 
         if(Test-SoftwareInstalled -NamePattern $SoftwareName -VersionPattern $Version -ISPattern $VersionIS)
             {

@@ -38,6 +38,7 @@ limitations under the License.
         - Dell Trusted Device
         - Dell Optimizer
         - Microsoft Windows Desktop Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
+        - Microsoft ASP.Net Core Runtime 6, 8, 9 and 10 (because some Dell tools require this as preparation) becareful it is not used by other applications
 
         .Parameter DellTool
         Value is the Name of Dell Application to looking for like example Dell Trusted Device
@@ -60,11 +61,11 @@ limitations under the License.
 
 #>
 param(
-            [Parameter(mandatory=$false)][ValidateSet("AllDell","Dell Core Services","Dell Device Management Agent","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist Remediation","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Client Device Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10")][String]$DellTool
+            [Parameter(mandatory=$false)][ValidateSet("AllDell","Dell Core Services","Dell Device Management Agent","Dell Digital Delivery","Dell Peripheral Core","Dell SupportAssist","Dell SupportAssist Remediation","Dell SupportAssist OS Recovery Plugin for Dell Update","Dell Display and Peripheral Manager","Dell Command | Update","Dell Command | Configure","Dell Command | Endpoint Configure for Microsoft Intune","Dell Command | Monitor","Dell Trusted Device","Dell Optimizer","Dell Device Management Agent","Dell Pair","Microsoft Windows Desktop Runtime 6","Microsoft Windows Desktop Runtime 8","Microsoft Windows Desktop Runtime 9","Microsoft Windows Desktop Runtime 10","Microsoft ASP.Net Core Runtime 6","Microsoft ASP.Net Core Runtime 8","Microsoft ASP.Net Core Runtime 9","Microsoft ASP.Net Core Runtime 10")][String]$DellTool
     )
 
 # Fallback if parameters are not provided by script call
-if (-not $DellTool)  { $DellTool  = "Dell SupportAssist"}
+if (-not $DellTool)  { $DellTool  = "Microsoft ASP.Net Core Runtime 8"}
 
 ##################################################
 # Varible Section                            #####
@@ -83,7 +84,6 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell Command | Monitor"; SearchString = "Dell*Command*Monitor"; SetupSearchString = "Dell*Command*Monitor"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Trusted Device"; SearchString = "Dell*Trusted*Device"; SetupSearchString = "Dell*Trusted*Device"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Optimizer"; SearchString = "Dell*Optimizer"; SetupSearchString = "Dell*Optimizer"; SilentSwitch = "/Silent"; Sequence = 1; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "Dell*Device*Management*Agent"; SilentSwitch = "/qn"; Sequence = 1; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Pair"; SearchString = "Dell*Pair"; SetupSearchString = "Dell*Pair"; SilentSwitch = "/S"; Sequence = 2; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Peripheral Core"; SearchString = "Dell*Peripheral*Core"; SetupSearchString = "Dell*Peripheral*Core"; SilentSwitch = "/qn"; Sequence = 3; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Digital Delivery"; SearchString = "Dell*Digital*Delivery*"; SetupSearchString = "Dell*Digital*Delivery*"; SilentSwitch = "/qn"; Sequence = 2; InstallSwitch = "/S"}
@@ -91,6 +91,10 @@ $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 8"; SearchString = "Microsoft*Windows*Desktop*Runtime*8*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 9"; SearchString = "Microsoft*Windows*Desktop*Runtime*9*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                         [PSCustomObject]@{NameParameter = "Microsoft Windows Desktop Runtime 10"; SearchString = "Microsoft*Windows*Desktop*Runtime*10*(x64)*"; SetupSearchString = "windowsdesktop-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 6"; SearchString = "Microsoft*ASP.Net*Core*6*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 8"; SearchString = "Microsoft*ASP.Net*Core*8*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 9"; SearchString = "Microsoft*ASP.Net*Core*9*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
+                        [PSCustomObject]@{NameParameter = "Microsoft ASP.Net Core Runtime 10"; SearchString = "Microsoft*ASP.Net*Core*10*(x64)*"; SetupSearchString = "aspnetcore-runtime*"; SilentSwitch = "/quiet /norestart"; Sequence = 9; InstallSwitch = "/install /quiet /norestart"}
                     )
 
 ##################################################
@@ -110,26 +114,27 @@ function Test-SoftwareInstalled
                     "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
                 )
 
+
+        # cover name conversion of Dell SupportAssist for Business PCs to Dell SupportAssist.
+        if($NamePattern -eq "Dell Supportassist" -and [Version]$VersionPattern -lt "5.0")
+            {
+                $NamePattern = "Dell Supportassist*Business*PCs"
+            }
+
         $items = foreach ($path in $paths)
             {
                 try
                     {
-                        If ($NamePattern -ne "Microsoft Windows Desktop Runtime*(x64)*")
+                        If ($NamePattern -notmatch "Microsoft.*Windows.*Desktop.*Runtime.*(x64).*" -and $NamePattern -notmatch "Microsoft.*ASP.Net.*Core.*(x64).*")
                             {
-                                if ($NamePattern -ne "Dell SupportAssist")
-                                    {
-                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
-                                    }
-                                else
-                                {
-                                    Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern -or $_.DisplayName -like "Dell SupportAssist*Business*"}
-                                }
+                                Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
                             }
                         else
                             {
                                 If ($path -like $paths[1])
                                     {
-                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern}
+                                        # try to cover wrong .net Version seen with some installer
+                                        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like $NamePattern -and ([version]$_.DisplayVersion).Major -eq $VersionPattern.Major }
                                     }
                             }
                     }
@@ -258,7 +263,21 @@ Try
                 $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
 
                 #### get Software details
-                $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+                $Versioncheck = switch ($DellTool) 
+                    {
+                        "Microsoft ASP.Net Core Runtime 10" {[Version]"10.0.0.0"}
+                        "Microsoft ASP.Net Core Runtime 9" {[Version]"9.0.0.0"}
+                        "Microsoft ASP.Net Core Runtime 8" {[Version]"8.0.0.0"}
+                        "Microsoft ASP.Net Core Runtime 6" {[Version]"6.0.0.0"}
+                        "Microsoft Windows Desktop Runtime 10" {[Version]"10.0.0.0"}
+                        "Microsoft Windows Desktop Runtime 9" {[Version]"9.0.0.0"}
+                        "Microsoft Windows Desktop Runtime 8" {[Version]"8.0.0.0"}
+                        "Microsoft Windows Desktop Runtime 6" {[Version]"6.0.0.0"}
+
+                        Default {[Version]"0.0.0.0"}
+                    }
+
+                $SoftwareDetails = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern $Versioncheck -ISPattern "Greater than"
 
                 # cleanup App list for non msi uninstall apps like Dell Optimizer
                 if ($Software.NameParameter -eq "Dell Optimizer" -or $Software.NameParameter -eq "Dell SupportAssist OS Recovery Plugin for Dell Update" -or $Software.NameParameter -eq "Dell SupportAssist Remediation" -or $Software.NameParameter -like "Microsoft Windows Desktop Runtime*")
@@ -266,115 +285,116 @@ Try
                         $SoftwareDetails = $SoftwareDetails | Where-Object {$Null -eq $_.InstallLocation}
                     }
 
-                # cover uninstall string not exist. This will be automaticlly a msi uninstall by default
-                try
+                #cover multiversions like you will have at .net installations
+                Foreach ($SoftwareInst in $SoftwareDetails)
                     {
-                        $SoftwareDetails.UninstallString = $SoftwareDetails.UninstallString #create a issue if not exist
-                    }
-                catch
-                    {
-                        $SoftwareDetails | Add-Member -MemberType NoteProperty -Name "UninstallString" -Value "msiexec"
-                    }
-
-                if($null -ne $SoftwareDetails)
-                    {
-                        Write-Verbose "$($SoftwareDetails.DisplayName) is installed with version $($SoftwareDetails.DisplayVersion)" -Verbose
-                        $UninstallData = [PSCustomObject]@{
-                                                            Software = $($SoftwareDetails.DisplayName)
-                                                            Version = $($SoftwareDetails.DisplayVersion)
-                                                            Uninstall = "started now"
-                                                        } | ConvertTo-Json
-
-                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-
-                        if ($DellTool -notlike "Microsoft Windows Desktop Runtime*")
+                        # cover uninstall string not exist. This will be automaticlly a msi uninstall by default
+                        try
                             {
-                                # call uninstall function with cover multiple uninstall strings
-                                Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareDetails.PSChildName -UninstallString $SoftwareDetails.UninstallString | Out-Null
+                                $SoftwareInst.UninstallString = $SoftwareInst.UninstallString #create a issue if not exist
+                            }
+                        catch
+                            {
+                                $SoftwareInst | Add-Member -MemberType NoteProperty -Name "UninstallString" -Value "msiexec"
+                            }
 
-                                # Logging uninstall result
-                                $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+                        if($null -ne $SoftwareInst)
+                            {
+                                Write-Verbose "$($SoftwareInst.DisplayName) is installed with version $($SoftwareInst.DisplayVersion)" -Verbose
+                                $UninstallData = [PSCustomObject]@{
+                                                                    Software = $($SoftwareInst.DisplayName)
+                                                                    Version = $($SoftwareInst.DisplayVersion)
+                                                                    Uninstall = "started now"
+                                                                } | ConvertTo-Json
 
-                                If($null -eq $UninstallResult)
+                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+
+                                if ($DellTool -notlike "Microsoft Windows Desktop Runtime*" -and $DellTool -notlike "Microsoft ASP.NET Core Runtime*")
                                     {
-                                        Write-Verbose "$DellTool is uninstalled successfully" -Verbose
+                                        # call uninstall function with cover multiple uninstall strings
+                                        Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareInst.PSChildName -UninstallString $SoftwareInst.UninstallString | Out-Null
 
-                                        $UninstallData = [PSCustomObject]@{
-                                                                            Software = $DellTool
-                                                                            Version = $($SoftwareDetails.DisplayVersion)
-                                                                            Uninstall = $true
-                                                                        } | ConvertTo-Json
+                                        # Logging uninstall result
+                                        $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
 
-                                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-                                        Exit 0
+                                        If($null -eq $UninstallResult)
+                                            {
+                                                Write-Verbose "$DellTool is uninstalled successfully" -Verbose
+
+                                                $UninstallData = [PSCustomObject]@{
+                                                                                    Software = $DellTool
+                                                                                    Version = $($SoftwareDetails.DisplayVersion)
+                                                                                    Uninstall = $true
+                                                                                } | ConvertTo-Json
+
+                                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                                                Exit 0
+                                            }
+                                        else
+                                            {
+                                                Write-Verbose "$DellTool uninstall failed" -Verbose
+
+                                                $UninstallData = [PSCustomObject]@{
+                                                                                    Software = $DellTool
+                                                                                    Version = $($SoftwareDetails.DisplayVersion)
+                                                                                    Uninstall = $false
+                                                                                } | ConvertTo-Json
+
+                                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                                                Exit 1
+                                            }
                                     }
                                 else
                                     {
-                                        Write-Verbose "$DellTool uninstall failed" -Verbose
 
-                                        $UninstallData = [PSCustomObject]@{
-                                                                            Software = $DellTool
-                                                                            Version = $($SoftwareDetails.DisplayVersion)
-                                                                            Uninstall = $false
-                                                                        } | ConvertTo-Json
+                                        # call uninstall function with cover multiple uninstall strings
+                                        Write-Verbose "Microsoft uninstall" -Verbose
+                                        Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareInst.PSChildName -UninstallString $SoftwareInst.UninstallString | Out-Null
 
-                                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-                                        Exit 1
+                                        # Check if Application uninstall was successful
+                                        $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern $SoftwareInst.DisplayVersion -ISPattern Equal
+
+                                        If($null -eq $UninstallResult)
+                                            {
+                                                Write-Verbose "$DellTool is uninstalled successfully" -Verbose
+
+                                                $UninstallData = [PSCustomObject]@{
+                                                                                    Software = $DellTool
+                                                                                    Version = $($SoftwareInst.DisplayVersion)
+                                                                                    Uninstall = $true
+                                                                                } | ConvertTo-Json
+
+                                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                                            }
+                                        else
+                                            {
+                                                Write-Verbose "$DellTool uninstall failed" -Verbose
+
+                                                $UninstallData = [PSCustomObject]@{
+                                                                                    Software = $DellTool
+                                                                                    Version = $($SoftwareInst.DisplayVersion)
+                                                                                    Uninstall = $false
+                                                                                } | ConvertTo-Json
+
+                                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                                            }
+
                                     }
+
                             }
                         else
                             {
-                                foreach ($SoftwareList in $SoftwareDetails)
-                                    {
-                                        # call uninstall function with cover multiple uninstall strings
-                                        Uninstall-DellTool -NamePattern $Software.NameParameter -AppID $SoftwareList.PSChildName -UninstallString $SoftwareList.UninstallString | Out-Null
-                                    }
+                                Write-Verbose "$DellTool is not installed script will exit here" -Verbose
 
-                                # Check if Application uninstall was successful
-                                $UninstallResult = Test-SoftwareInstalled -NamePattern $Software.SearchString -VersionPattern 0.0.0.0 -ISPattern "Greater than"
+                                $UninstallData = [PSCustomObject]@{
+                                                                    Software = $DellTool
+                                                                    Version = "not installed"
+                                                                    Uninstall = $true
+                                                                } | ConvertTo-Json
 
-                                If($null -eq $UninstallResult)
-                                    {
-                                        Write-Verbose "$DellTool is uninstalled successfully" -Verbose
-
-                                        $UninstallData = [PSCustomObject]@{
-                                                                            Software = $DellTool
-                                                                            Version = $($SoftwareDetails.DisplayVersion)
-                                                                            Uninstall = $true
-                                                                        } | ConvertTo-Json
-
-                                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-                                        Exit 0
-                                    }
-                                else
-                                    {
-                                        Write-Verbose "$DellTool uninstall failed" -Verbose
-
-                                        $UninstallData = [PSCustomObject]@{
-                                                                            Software = $DellTool
-                                                                            Version = $($SoftwareDetails.DisplayVersion)
-                                                                            Uninstall = $false
-                                                                        } | ConvertTo-Json
-
-                                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-                                        Exit 1
-                                    }
-
+                                Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
+                                Exit 0
                             }
-
-                    }
-                else
-                    {
-                        Write-Verbose "$DellTool is not installed script will exit here" -Verbose
-
-                        $UninstallData = [PSCustomObject]@{
-                                                            Software = $DellTool
-                                                            Version = "not installed"
-                                                            Uninstall = $true
-                                                        } | ConvertTo-Json
-
-                        Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
-                        Exit 0
                     }
             }
         else
@@ -449,6 +469,7 @@ Try
                                         Write-EventLog -LogName Dell -Source "Dell Software Uninstall" -EntryType Information -EventId 10 -Message $UninstallData
                             }
                     }
+                Exit 0
             }
     }
 Catch
