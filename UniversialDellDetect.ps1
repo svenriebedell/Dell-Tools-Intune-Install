@@ -193,7 +193,6 @@ function Test-SoftwareInstalled
 
 Try
     {
-        
         $SoftwareName = $DellSoftwareList | where-object {$_.NameParameter -like $DellTool} | select-object -ExpandProperty Searchstring
 
         if(Test-SoftwareInstalled -NamePattern $SoftwareName -VersionPattern $Version -ISPattern $VersionIS)

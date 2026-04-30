@@ -263,7 +263,7 @@ Try
                 $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
 
                 #### get Software details
-                $Versioncheck = switch ($DellTool) 
+                $Versioncheck = switch ($DellTool)
                     {
                         "Microsoft ASP.Net Core Runtime 10" {[Version]"10.0.0.0"}
                         "Microsoft ASP.Net Core Runtime 9" {[Version]"9.0.0.0"}

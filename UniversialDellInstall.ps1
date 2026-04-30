@@ -379,7 +379,7 @@ catch
     {
         Write-Verbose "Event source Dell Software Install exist." -Verbose
     }
-   
+
 # select the searchstring for function
 $Software = $DellSoftwareList | where-object {$_.NameParameter -eq $DellTool}
 
