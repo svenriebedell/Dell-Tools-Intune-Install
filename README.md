@@ -48,7 +48,6 @@
 - Dell Power Manager
 - Dell Peripheral Manager
 - Dell Display Manager 1 and 2
-- Dell SupportAssist OS Recovery Plugin for Dell Update
 
 
 # Dell Tools Intune Install – Universal Scripts
