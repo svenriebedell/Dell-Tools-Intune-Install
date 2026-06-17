@@ -75,8 +75,8 @@ param(
 if (-not $DellTool)  { $DellTool  = "Microsoft Windows Desktop Runtime 10" }
 if (-not $UninstallOldVersion) { $UninstallOldVersion = "false" }
 
-$DEPLOYMENTKEY = "Add your Deploymentkey you have used at the deployment package creator" #only required for Dell SupportAssist MSI deployment
-$DCDMGROUPTOKEN = "Add your Group token" #only required for Dell Client Device Manager
+$DEPLOYMENTKEY = "Add your Deploymentkey you have used at the deployment package creator" #only required for Dell SupportAssist deployments with using MST registration with ADMX registration not needed.
+$DCDMGROUPTOKEN = "Add your Group token" #only required for Dell Device Management Agent
 
 ##############################################
 #### Function section                     ####
