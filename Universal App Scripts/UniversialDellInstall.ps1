@@ -1,7 +1,7 @@
 <#
 _author_ = Sven Riebe <sven_riebe@Dell.com>
 _twitter_ = @SvenRiebe
-_version_ = 1.0.0
+_version_ = 1.0.1
 _Dev_Status_ = Test
 Copyright (c)2026 Dell Inc. or its subsidiaries. All Rights Reserved.
 
@@ -22,6 +22,7 @@ limitations under the License.
 
 Change Log
     1.0.0   initial version
+    1.0.1   Update Installation parameter for SupportAssist 5.1.1.3567 and later for MST install (if you want to install Version before by MST you need to change the InstallSwitch parameter to InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS')
 
 #>
 
@@ -34,7 +35,7 @@ Change Log
 
       This script support the following applications
         - Dell Core Services
-        - Dell SupportAssist (only Version 5.x and higher)
+        - Dell SupportAssist (only Version 5.1.1.3567 and higher)
         - Dell SupportAssist OS Recovery Plugin for Dell Update
         - Dell Display and Peripheral Manager
         - Dell Device Management Agent (Agent for Dell Device Management Console for Peripherals updates)
@@ -337,7 +338,7 @@ function Install-DellTool
 $DellSoftwareList = @(
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist OS Recovery Plugin for Dell Update"; SearchString = "Dell*SupportAssist*OS*Recovery*Plugin*"; SetupSearchString = "Dell*SupportAssist*OS*Recovery*Plugin*"; SilentSwitch = "/S"; Sequence = 2; Type = "EXE"; InstallSwitch = "/S"}
                         [PSCustomObject]@{NameParameter = "Dell Core Services"; SearchString = "Dell*Core*Services"; SetupSearchString = "Dell*Core*Services"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "/S"}
-                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
+                        [PSCustomObject]@{NameParameter = "Dell SupportAssist"; SearchString = "Dell*Supportassist"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,SOFTWARE,DTM,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
                         [PSCustomObject]@{NameParameter = "Dell SupportAssist Remediation"; SearchString = "Dell*Supportassist*Remediation"; SetupSearchString = "SupportAssist*"; SilentSwitch = "/qn"; Sequence = 3; Type = "EXE"; InstallSwitch = "ADDLOCAL='BASE,CORE,FULL,HWDIAGS,INSIGHTS,RAAS' SOURCE=TechDirect /norestart /qn"}
                         [PSCustomObject]@{NameParameter = "Dell Display and Peripheral Manager"; SearchString = "Dell*Display*Peripheral*Manager"; SetupSearchString = "DDPM-Setup*"; SilentSwitch = "/uninst /silent"; Sequence = 1; Type = "EXE"; InstallSwitch = "/Silent /InAppUpdateLock /TelemetryConsent=false"}
                         [PSCustomObject]@{NameParameter = "Dell Device Management Agent"; SearchString = "Dell*Device*Management*Agent"; SetupSearchString = "DellDeviceManagementAgent.SubAgent*"; SilentSwitch = "/qn"; Sequence = 1; Type = "EXE"; InstallSwitch = '/s /v"/qn GROUPTOKEN="{0}" URL="https://device.manage.dell.com" /lv* C:\ProgramData\Dell\DDMA_installer.log"' -f $DCDMGROUPTOKEN}
